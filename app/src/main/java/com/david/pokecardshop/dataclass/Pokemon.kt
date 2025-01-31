@@ -45,6 +45,7 @@ data class Pokemon(
     @Expose @SerializedName("species") val species: Species,
     //@Expose @SerializedName("stats") val stats: List<Stat>,
     @Expose @SerializedName("types") val types: List<Type>,
+    //@Expose @SerializedName("color") val color: String,
     @Expose @SerializedName("flavor_text_entries") val flavorTextEntries: List<FlavorTextEntry>,
 // added property for the Spanish flavor text entries
     var spanishFlavorTextEntries: List<String> = emptyList()
@@ -165,6 +166,11 @@ data class Type(
     @Expose @SerializedName("type") val type: TypeInfo
 )
 
+data class Color(
+    @Expose @SerializedName("name") val name: String,
+    @Expose @SerializedName("url") val url: String
+)
+
 data class TypeInfo(
     @Expose @SerializedName("name") val name: String,
     @Expose @SerializedName("url") val url: String
@@ -212,6 +218,9 @@ class PokeInfoViewModel() : ViewModel() {
     private val _spanishDescription = mutableStateOf("")
     val spanishDescription: State<String> = _spanishDescription
 
+    private val _pokemonColor = mutableStateOf("")
+    val pokemonColor: State<String> = _pokemonColor
+
     private val _pokemonListByGen = MutableLiveData<List<Pokemon>>(emptyList())
     val pokemonListByGen: LiveData<List<Pokemon>> = _pokemonListByGen
 
@@ -258,6 +267,29 @@ class PokeInfoViewModel() : ViewModel() {
             }
         }
     }
+//    fun getPokemonColor(id: Int) {
+//        viewModelScope.launch {
+//            val callColor = service.getPokemonSpecies(id)
+//            try {
+//                val response = callColor.awaitResponse()
+//                if (response.isSuccessful) {
+//                    val pokemon = response.body()
+//                    val color = pokemon?.color
+//                    _pokemonColor.value = pokemonColor.value
+//                } else {
+//                    // Handle error
+//                    Log.e("PokeInfoViewModel", "Error fetching Pokemon color: ${response.errorBody()?.string()}")
+//                    _pokemonColor.value = "Error loading color"
+//                }
+//            } catch (e: Exception) {
+//                // Handle network or other errors
+//                Log.e("PokeInfoViewModel", "Error fetching Pokemon description: ${e.message}")
+//                _pokemonColor.value = "Error loading color"
+//            }
+//        }
+//
+//    }
+
     fun getPokemonList(pokemonIds: List<Int>) {
         var apiService = RetrofitClient.create(ApiService::class.java)
         viewModelScope.launch {
@@ -432,27 +464,68 @@ fun String.extractPokemonId2(): Int? {
 }
 
 
-fun TypeToColor(tipo:Type):Color{
-    return when (tipo.type.name) {
-        "grass" -> color_planta_light
-        "water" -> color_agua_light
-        "fire" -> color_fuego_light
-        "fighting" -> color_lucha_light
-        "poison" -> color_veneno_light
-        "steel" -> color_acero_light
-        "bug" -> color_bicho_light
-        "dragon" -> color_dragon_light
-        "electric" -> color_electrico_light
-        "fairy" -> color_hada_light
-        "ice" -> color_hielo_light
-        "psychic" -> color_psiquico_light
-        "rock" -> color_roca_light
-        "ground" -> color_tierra_light
-        "dark" -> color_siniestro_light
-        "normal" -> color_normal_light
-        "flying" -> color_volador_light
-        "ghost" -> color_fantasma_light
-        else -> { negro80}
+fun TypeToColor(tipo:Type, opc:Int):Color{
+    if(opc==1) {
+        return when (tipo.type.name) {
+            "grass" -> color_planta_light
+            "water" -> color_agua_light
+            "fire" -> color_fuego_light
+            "fighting" -> color_lucha_light
+            "poison" -> color_veneno_light
+            "steel" -> color_acero_light
+            "bug" -> color_bicho_light
+            "dragon" -> color_dragon_light
+            "electric" -> color_electrico_light
+            "fairy" -> color_hada_light
+            "ice" -> color_hielo_light
+            "psychic" -> color_psiquico_light
+            "rock" -> color_roca_light
+            "ground" -> color_tierra_light
+            "dark" -> color_siniestro_light
+            "normal" -> color_normal_light
+            "flying" -> color_volador_light
+            "ghost" -> color_fantasma_light
+            else -> { negro80}
+        }
+    }
+    else{
+        return when (tipo.type.name) {
+            "grass" -> color_planta_dark
+            "water" -> color_agua_dark
+            "fire" -> color_fuego_dark
+            "fighting" -> color_lucha_dark
+            "poison" -> color_veneno_dark
+            "steel" -> color_acero_dark
+            "bug" -> color_bicho_dark
+            "dragon" -> color_dragon_dark
+            "electric" -> color_electrico_dark
+            "fairy" -> color_hada_dark
+            "ice" -> color_hielo_dark
+            "psychic" -> color_psiquico_dark
+            "rock" -> color_roca_dark
+            "ground" -> color_tierra_dark
+            "dark" -> color_siniestro_dark
+            "normal" -> color_normal_dark
+            "flying" -> color_volador_dark
+            "ghost" -> color_fantasma_dark
+            else -> { negro80}
+        }
+    }
+}
+
+fun ColorStringToColorType(string_color:String):Color{
+    return when (string_color) {
+        "black" -> color_siniestro_dark
+        "blue" -> color_agua_light
+        "brown" -> color_tierra_dark
+        "gray" -> color_normal_dark
+        "green" -> color_planta_light
+        "pink" -> color_hada_light
+        "purple" -> color_veneno_light
+        "red" -> color_fuego_light
+        "yellow" -> color_electrico_light
+        "white" -> blanco60
+        else -> { Color.Red}
     }
 }
 
@@ -495,5 +568,11 @@ fun adaptaNombre(nombre: String): String {
         .split("-")[0] // Take only the part before the first hyphen
         .replace("[^a-zA-Z0-9]".toRegex(), "") // Elimina otros caracteres especiales
         .lowercase()
+    return devuelve
+}
+
+fun adaptaDescripcion(desc: String): String {
+    val devuelve = desc
+        .replace("\n","")
     return devuelve
 }

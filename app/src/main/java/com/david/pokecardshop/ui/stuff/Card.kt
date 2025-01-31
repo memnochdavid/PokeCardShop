@@ -4,8 +4,14 @@ import android.content.Intent
 import android.media.MediaPlayer
 import android.util.Log
 import android.widget.Toast
+import androidx.compose.animation.core.FastOutSlowInEasing
+import androidx.compose.animation.core.LinearEasing
+import androidx.compose.animation.core.RepeatMode
 import androidx.compose.animation.core.Spring
+import androidx.compose.animation.core.animateFloat
 import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.core.infiniteRepeatable
+import androidx.compose.animation.core.rememberInfiniteTransition
 import androidx.compose.animation.core.spring
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.Image
@@ -25,6 +31,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -41,6 +48,8 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.scale
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.input.pointer.pointerInput
@@ -63,9 +72,12 @@ import com.david.pokecardshop.dataclass.Sprites
 import com.david.pokecardshop.dataclass.TypeToBackground
 import com.david.pokecardshop.dataclass.TypeToColor
 import com.david.pokecardshop.dataclass.TypeToDrawableAPI
+import com.david.pokecardshop.dataclass.adaptaDescripcion
 import com.david.pokecardshop.dataclass.adaptaNombre
 import com.david.pokecardshop.dataclass.firstMayus
 import com.david.pokecardshop.ui.theme.*
+import kotlin.math.PI
+import kotlin.math.sin
 
 
 @Composable
@@ -274,8 +286,7 @@ fun CardPeque2(pokemon: Pokemon, onClick: () -> Unit){
                 indication = null,
 
                 onClick = {
-                    click = !click
-                    onClick()
+
                 }
             )
             .indication(
@@ -291,6 +302,8 @@ fun CardPeque2(pokemon: Pokemon, onClick: () -> Unit){
                         } finally {
                             isPressed = false // Reset isPressed in finally block
                         }
+                        click = !click
+                        onClick()
                         Log.d("POKEMON CLICK - NOMBRE", "Pokemon: $pokemon")
 
                     }
@@ -301,8 +314,8 @@ fun CardPeque2(pokemon: Pokemon, onClick: () -> Unit){
         ConstraintLayout(
             modifier = Modifier
                 .wrapContentSize()
-                .border(5.dp, TypeToColor(pokemon.types[0]), RectangleShape)
-                .background(TypeToColor(pokemon.types[0]))
+                .border(5.dp, TypeToColor(pokemon.types[0], 1), RectangleShape)
+                .background(TypeToColor(pokemon.types[0], 1))
         ) {
             val (imagen, nombre, tipos) = createRefs()
             val imagen_poke = rememberAsyncImagePainter(
@@ -322,7 +335,7 @@ fun CardPeque2(pokemon: Pokemon, onClick: () -> Unit){
                 modifier = Modifier
                     .size(100.dp)
                     .fillMaxSize()
-                    .constrainAs(imagen){
+                    .constrainAs(imagen) {
                         start.linkTo(parent.start)
                         top.linkTo(parent.top)
                         bottom.linkTo(nombre.top)
@@ -365,139 +378,184 @@ fun CardGrande(pokemon: Pokemon) {
         contentScale = ContentScale.FillBounds,
     )
 
-    ConstraintLayout(
+    val shimmer_color = shimmerBrush(
+        showShimmer = true,
+        durationMillis=1000,
+        gradientStartColor = TypeToColor(pokemon.types[0],1),
+        gradientEndColor = Color.White
+    )
+
+    Card(
         modifier = Modifier
-            .fillMaxSize()
-            .padding(top = 0.dp)
-    ) {
-        val (number,desc, nombre, foto, tipo1, tipo2,datos,interacciones,add,evos,regis,formas_unown,gigamax,megaevo) = createRefs()
-
-
-        Image(
-            painter = imagen_poke,
-            contentDescription = "Pokemon",
+            .fillMaxWidth(0.75f)
+            .wrapContentHeight()
+            .background(TypeToColor(pokemon.types[0],1))
+            .border(8.dp,shimmer_color,RectangleShape)
+            .padding(top = 0.dp),
+        shape = RoundedCornerShape(15.dp)
+    ){
+        ConstraintLayout(
             modifier = Modifier
-                .size(350.dp)
                 .fillMaxSize()
-                .constrainAs(foto) {
-                    top.linkTo(parent.top)
-                    start.linkTo(parent.start)
-                    end.linkTo(parent.end)
-                    bottom.linkTo(datos.top)
-                }
-                .clickable {
+        ) {
+            val (desc, foto, tipo1, tipo2,datos,fondo_tipo) = createRefs()
 
-                },
+            val backgroundImage = painterResource(TypeToBackground(pokemon.types[0]))
 
+            Row(
+                modifier = Modifier
+                    .constrainAs(datos) {
+                        top.linkTo(parent.top)
+                        start.linkTo(parent.start)
+                        end.linkTo(parent.end)
+                        bottom.linkTo(foto.top)
+                    },
+                 horizontalArrangement = Arrangement.SpaceEvenly
+            ){
+                Text(modifier = Modifier
+                    .padding(bottom = 10.dp),
+                    fontWeight = FontWeight.Bold,
+                    text = "#$numero",
+                    fontSize = 20.sp)
+
+                Text(modifier = Modifier
+                    .padding(bottom = 15.dp),
+                    fontWeight = FontWeight.Bold,
+                    text = nombrePokeLimpio.firstMayus(),
+                    fontSize = 20.sp)
+            }
+            Image(
+                painter = backgroundImage,
+                contentDescription = "Background Image",
+                modifier = Modifier
+                    .size(250.dp)
+                    .border(8.dp, shimmer_color, RectangleShape)
+                    .constrainAs(fondo_tipo) {
+                        top.linkTo(foto.top)
+                        start.linkTo(foto.start)
+                        end.linkTo(foto.end)
+                        bottom.linkTo(foto.bottom)
+                    },
+                contentScale = ContentScale.Crop,
             )
 
-        LazyColumn(
-            modifier = Modifier
-                .constrainAs(datos) {
-                    top.linkTo(foto.bottom)
-                    start.linkTo(parent.start)
-                    end.linkTo(parent.end)
-                    bottom.linkTo(parent.bottom)
-                    height = Dimension.fillToConstraints
-                }
-                .fillMaxHeight(),
-            reverseLayout = true,/////////////////
-        ){
-            item{
-                ConstraintLayout{
-                    Text(modifier = Modifier
-                        .constrainAs(number) {
-                            top.linkTo(parent.top)
-                            start.linkTo(parent.start)
-                            end.linkTo(parent.end)
-                            //bottom.linkTo(nombre.top)////////????????????
-                        }
-                        .padding(bottom = 10.dp)
-                        .fillMaxHeight(),//////////
-                        fontWeight = FontWeight.Bold,
-                        text = "#$numero",
-                        fontSize = 35.sp)
-
-                    Text(modifier = Modifier
-                        .constrainAs(nombre) {
-                            top.linkTo(number.bottom)
-                            start.linkTo(parent.start)
-                            end.linkTo(parent.end)
-                            //bottom.linkTo(tipo1.top)
-                        }
-                        .padding(bottom = 15.dp),
-                        fontWeight = FontWeight.Bold,
-                        text = nombrePokeLimpio,
-                        fontSize = 32.sp)
-
-                    if (pokemon.types.size == 1) {
-
-                        Image(
-                            painter = painterResource(id = TypeToDrawableAPI(pokemon.types[0])),
-                            contentDescription = "Tipo 1",
-                            contentScale = ContentScale.FillWidth,
-                            modifier = Modifier
-                                .width(80.dp)
-                                .padding(top = 5.dp,bottom = 10.dp)
-                                .constrainAs(tipo1) {
-                                    start.linkTo(parent.start)
-                                    end.linkTo(parent.end)
-                                    top.linkTo(nombre.bottom)
-                                    bottom.linkTo(desc.top)
-                                }
-                        )
-                    } else {
-                        Image(
-                            painter = painterResource(id = TypeToDrawableAPI(pokemon.types[0])),
-                            contentDescription = "Tipo 1",
-                            contentScale = ContentScale.FillWidth,
-                            modifier = Modifier
-                                .width(80.dp)
-                                .padding(top = 5.dp,bottom = 10.dp)
-                                .constrainAs(tipo1) {
-                                    start.linkTo(parent.start)
-                                    end.linkTo(tipo2.start)
-                                    top.linkTo(nombre.bottom)
-                                    bottom.linkTo(desc.top)
-                                },
-                        )
-                        Image(
-                            painter = painterResource(id = TypeToDrawableAPI(pokemon.types[1])),
-                            contentDescription = "Tipo 2",
-                            contentScale = ContentScale.FillWidth,
-                            modifier = Modifier
-                                .width(80.dp)
-                                .padding(top = 5.dp,bottom = 10.dp)
-                                .constrainAs(tipo2) {
-                                    start.linkTo(tipo1.end)
-                                    end.linkTo(parent.end)
-                                    top.linkTo(nombre.bottom)
-                                    bottom.linkTo(desc.top)
-                                }
-                        )
+            Image(
+                painter = imagen_poke,
+                contentDescription = "Pokemon",
+                modifier = Modifier
+                    .size(300.dp)
+                    .fillMaxSize()
+                    .constrainAs(foto) {
+                        top.linkTo(datos.bottom)
+                        start.linkTo(parent.start)
+                        end.linkTo(parent.end)
+                        //bottom.linkTo(datos.top)
                     }
+                    .clickable {},
+                )
 
-                    Row(modifier = Modifier
-                        .constrainAs(desc) {
-                            top.linkTo(tipo1.bottom)
+            if (pokemon.types.size == 1) {
+
+                Image(
+                    painter = painterResource(id = TypeToDrawableAPI(pokemon.types[0])),
+                    contentDescription = "Tipo 1",
+                    contentScale = ContentScale.FillWidth,
+                    modifier = Modifier
+                        .width(80.dp)
+                        .padding(top = 5.dp, bottom = 10.dp)
+                        .constrainAs(tipo1) {
                             start.linkTo(parent.start)
                             end.linkTo(parent.end)
-                            bottom.linkTo(interacciones.top)
-                        }){
-                        Text(text = spanishDescription,
-                            modifier = Modifier
-                                .padding(start = 10.dp)
-                        )
-
-                    }
-
-                }
-
+                            top.linkTo(foto.bottom)
+                            bottom.linkTo(desc.top)
+                        }
+                )
+            } else {
+                Image(
+                    painter = painterResource(id = TypeToDrawableAPI(pokemon.types[0])),
+                    contentDescription = "Tipo 1",
+                    contentScale = ContentScale.FillWidth,
+                    modifier = Modifier
+                        .width(80.dp)
+                        .padding(top = 5.dp, bottom = 10.dp)
+                        .constrainAs(tipo1) {
+                            start.linkTo(parent.start)
+                            end.linkTo(tipo2.start)
+                            top.linkTo(foto.bottom)
+                            bottom.linkTo(desc.top)
+                        },
+                )
+                Image(
+                    painter = painterResource(id = TypeToDrawableAPI(pokemon.types[1])),
+                    contentDescription = "Tipo 2",
+                    contentScale = ContentScale.FillWidth,
+                    modifier = Modifier
+                        .width(80.dp)
+                        .padding(top = 5.dp, bottom = 10.dp)
+                        .constrainAs(tipo2) {
+                            start.linkTo(tipo1.end)
+                            end.linkTo(parent.end)
+                            top.linkTo(foto.bottom)
+                            bottom.linkTo(desc.top)
+                        }
+                )
             }
 
+            Row(modifier = Modifier
+                .constrainAs(desc) {
+                    top.linkTo(tipo1.bottom)
+                    start.linkTo(parent.start)
+                    end.linkTo(parent.end)
+                    //bottom.linkTo(parent.bottom)
+                }){
+                Text(
+                    text = adaptaDescripcion(spanishDescription),
+                    modifier = Modifier
+                        .wrapContentSize()
+                        .padding(horizontal = 10.dp, vertical = 15.dp)
+                )
+
+            }
         }
     }
+
+
 }
+
+
+@Composable
+fun shimmerBrush(
+    showShimmer: Boolean = true,
+    targetValue: Float = 1000f,
+    durationMillis: Int = 1500,
+    gradientStartColor: Color = Color.LightGray.copy(alpha = 0.5f),
+    gradientEndColor: Color = Color.LightGray,
+): Brush {
+    return if (showShimmer) {
+        val transition = rememberInfiniteTransition(label = "")
+        val translateAnimation by transition.animateFloat(
+            initialValue = 0f,
+            targetValue = targetValue,
+            animationSpec = infiniteRepeatable(
+                animation = tween(
+                    durationMillis = durationMillis,
+                    easing = FastOutSlowInEasing
+                ),
+                repeatMode = RepeatMode.Restart
+            ), label = ""
+        )
+        Brush.linearGradient(
+            colors = listOf(gradientStartColor, gradientEndColor, gradientStartColor),
+            start = Offset(x = translateAnimation, y = 0f),
+            end = Offset(x = translateAnimation + targetValue, y = 0f)
+        )
+    } else {
+        Brush.linearGradient(listOf(Color.Transparent, Color.Transparent))
+    }
+}
+
+
+
 
 
 /*
