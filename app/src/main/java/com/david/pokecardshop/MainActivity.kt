@@ -27,8 +27,13 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.systemBarsPadding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.wrapContentHeight
+import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
+import androidx.compose.foundation.lazy.grid.GridCells
+import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
+import androidx.compose.foundation.lazy.grid.items
+import androidx.compose.foundation.lazy.grid.itemsIndexed
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -72,6 +77,9 @@ import com.david.pokecardshop.ui.theme.PokeCardShopTheme
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.filter
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.david.pokecardshop.ui.stuff.CardGrande
+import com.david.pokecardshop.ui.stuff.CardPeque2
+import com.david.pokecardshop.ui.theme.*
 
 var isLoadingAPI by mutableStateOf(true)
 
@@ -93,11 +101,12 @@ class MainActivity : ComponentActivity() {
 //@SuppressLint("UnrememberedMutableState")
 @Composable
 fun VerListaPokeAPI(modifier: Modifier = Modifier,listaApi: List<Pokemon>) {
-
+    var onCardClick by remember { mutableStateOf(false) }
+    //var pokemonClicked by remember { mutableStateOf(List<Pokemon>())}
     var listaFiltrada by remember { mutableStateOf(listaApi) }
     if (isLoadingAPI) { //se asegura de haber cargado los datos de la nube antes de empezar a mostrar nada
         Box(
-            modifier = modifier.background(Color.Red),
+            modifier = modifier.background(color_fuego_dark).fillMaxSize(),
             contentAlignment = Alignment.Center
         ) {
             CircularProgressIndicator(
@@ -108,6 +117,7 @@ fun VerListaPokeAPI(modifier: Modifier = Modifier,listaApi: List<Pokemon>) {
         }
     } else {
         listaFiltrada = listaApi
+        var pokemonClicked by remember { mutableStateOf(listaFiltrada[0]) }
         Box(
             modifier = Modifier
                 .fillMaxSize()
@@ -116,17 +126,23 @@ fun VerListaPokeAPI(modifier: Modifier = Modifier,listaApi: List<Pokemon>) {
                 .systemBarsPadding()
                 .imePadding()
         ) {
-            LazyColumn(
-                modifier = Modifier
-                    //.fillMaxWidth()
-                    .fillMaxSize()
+            LazyVerticalGrid(
+                columns = GridCells.Fixed(3),
+                modifier = Modifier.wrapContentSize()
             ) {
                 items(listaFiltrada) { pokemon ->
-                    Log.d("PokemonList", "Pokemon: $pokemon")
-                    CardPeque(pokemon)
-                    Log.d("POKEMON DE API", pokemon.toString())
+                    CardPeque2(
+                        pokemon = pokemon,
+                        onClick = {
+                            onCardClick = !onCardClick
+                            pokemonClicked = pokemon
+                    })
                 }
             }
+            if (onCardClick) {
+                CardGrande(pokemon = pokemonClicked)
+            }
+
         }
     }
 }
@@ -147,6 +163,25 @@ fun listaByGen(gen: Int): List<Pokemon> {
     }
     return pokemonListByGen
 }
+
+@Composable
+fun listaPokemon(): List<Pokemon> {
+    val viewModel: PokeInfoViewModel = viewModel()
+    val pokemonList by viewModel.pokemonList.observeAsState(emptyList())
+    LaunchedEffect(Unit) {
+        isLoadingAPI = true // Set to true before API call
+        viewModel.getAllGen() // Trigger API call
+        // Wait for pokemonListByGen to be populated
+        snapshotFlow { pokemonList }
+            .filter { it.isNotEmpty() } // Filter until list is not empty
+            .collect {
+                isLoadingAPI = false // Set to false when data is loaded
+            }
+    }
+    return pokemonList
+}
+
+
 @Composable
 fun listaTipos(): List<Type> {
     val viewModel: PokeInfoViewModel = viewModel()

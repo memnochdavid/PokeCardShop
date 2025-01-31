@@ -1,7 +1,6 @@
 package com.david.pokecardshop.dataclass
 
-import android.os.Parcel
-import android.os.Parcelable
+
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
@@ -9,57 +8,15 @@ import com.google.gson.annotations.Expose
 import com.google.gson.annotations.SerializedName
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
-import android.content.Intent
 import android.util.Log
-import androidx.compose.animation.core.Spring
-import androidx.compose.animation.core.animateFloatAsState
-import androidx.compose.animation.core.spring
-import androidx.compose.foundation.Image
-import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
-import androidx.compose.foundation.gestures.detectTapGestures
-import androidx.compose.foundation.indication
-import androidx.compose.foundation.interaction.MutableInteractionSource
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
-import androidx.compose.material3.Card
-import androidx.compose.material3.CircularProgressIndicator
-import androidx.compose.material3.Text
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.State
-import coil.compose.rememberAsyncImagePainter
-import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.livedata.observeAsState
-import androidx.compose.runtime.mutableStateListOf
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
-import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.scale
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.input.pointer.pointerInput
-import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.res.colorResource
-import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.viewModelScope
-import coil.compose.rememberAsyncImagePainter
-import androidx.constraintlayout.compose.ConstraintLayout
 import androidx.lifecycle.asFlow
 import com.david.pokecardshop.R
 import com.david.pokecardshop.api.ApiService
+import com.david.pokecardshop.ui.theme.*
 import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
@@ -260,6 +217,8 @@ class PokeInfoViewModel() : ViewModel() {
 
     private val _pokemonTypeList = MutableLiveData<List<TypeInfo>>(emptyList())
     val pokemonTypeList: LiveData<List<TypeInfo>> = _pokemonTypeList
+    private val _allPokemonList = MutableLiveData<List<Pokemon>>(emptyList())
+    val allPokemonList: LiveData<List<Pokemon>> = _allPokemonList
 
     fun getPokemonInfo(id: Int){
         val call = service.getPokemonInfo(id)
@@ -315,6 +274,22 @@ class PokeInfoViewModel() : ViewModel() {
             }
         }
     }
+    fun getTypeList() {
+        viewModelScope.launch {
+            try {
+                val typeListResponse = service.getTypeList().awaitResponse()
+                if (typeListResponse.isSuccessful) {
+                    val typeList = typeListResponse.body()?.results
+                    // Update _pokemonTypeList with the list of TypeInfo objects
+                    _pokemonTypeList.value = typeList ?: emptyList()
+                } else {
+                    Log.e("PokeInfoViewModel", "Error fetching type list: ${typeListResponse.errorBody()?.string()}")
+                }
+            } catch (e: Exception) {
+                Log.e("PokeInfoViewModel", "Error fetching type list: ${e.message}")
+            }
+        }
+    }
     fun getListByGeneration(id: Int) {
         viewModelScope.launch {
             try {
@@ -353,19 +328,38 @@ class PokeInfoViewModel() : ViewModel() {
             }
         }
     }
-    fun getTypeList() {
+
+    fun getAllGen() {
         viewModelScope.launch {
             try {
-                val typeListResponse = service.getTypeList().awaitResponse()
-                if (typeListResponse.isSuccessful) {
-                    val typeList = typeListResponse.body()?.results
-                    // Update _pokemonTypeList with the list of TypeInfo objects
-                    _pokemonTypeList.value = typeList ?: emptyList()
-                } else {
-                    Log.e("PokeInfoViewModel", "Error fetching type list: ${typeListResponse.errorBody()?.string()}")
+                val allPokemon = mutableListOf<Pokemon>()
+                // Iterate through generations 1 to 9
+                for (generationId in 1..9) {
+                    val generationResponse = service.getGeneration(generationId).awaitResponse()
+                    if (generationResponse.isSuccessful) {
+                        val pokemonSpecies = generationResponse.body()?.pokemonSpecies ?: emptyList()
+                        val pokemonInfoList = pokemonSpecies.mapNotNull { species ->
+                            val pokemonId = species.url.extractPokemonId()
+                            if (pokemonId != null) {
+                                service.getPokemonInfo(pokemonId).awaitResponse().body()
+                            } else {
+                                null
+                            }
+                        }
+                        allPokemon.addAll(pokemonInfoList)
+                    } else {
+                        Log.e(
+                            "PokeInfoViewModel",
+                            "Error fetching generation $generationId details: ${generationResponse.errorBody()?.string()}"
+                        )
+                    }
                 }
+                // Sort the combined list by Pokemon ID
+                val sortedAllPokemon = allPokemon.sortedBy { it.id }
+                // Update the LiveData with the sorted list
+                _allPokemonList.value = sortedAllPokemon
             } catch (e: Exception) {
-                Log.e("PokeInfoViewModel", "Error fetching type list: ${e.message}")
+                Log.e("PokeInfoViewModel", "Error fetching all Pokemon: ${e.message}")
             }
         }
     }
@@ -435,4 +429,71 @@ fun String.extractPokemonId2(): Int? {
     val pattern = "/pokemon/(\\d+)/".toRegex()
     val matchResult = pattern.find(this)
     return matchResult?.groupValues?.get(1)?.toIntOrNull()
+}
+
+
+fun TypeToColor(tipo:Type):Color{
+    return when (tipo.type.name) {
+        "grass" -> color_planta_light
+        "water" -> color_agua_light
+        "fire" -> color_fuego_light
+        "fighting" -> color_lucha_light
+        "poison" -> color_veneno_light
+        "steel" -> color_acero_light
+        "bug" -> color_bicho_light
+        "dragon" -> color_dragon_light
+        "electric" -> color_electrico_light
+        "fairy" -> color_hada_light
+        "ice" -> color_hielo_light
+        "psychic" -> color_psiquico_light
+        "rock" -> color_roca_light
+        "ground" -> color_tierra_light
+        "dark" -> color_siniestro_light
+        "normal" -> color_normal_light
+        "flying" -> color_volador_light
+        "ghost" -> color_fantasma_light
+        else -> { negro80}
+    }
+}
+
+fun TypeToBackground(tipo:Type):Int{
+    return when (tipo.type.name) {
+        "grass" -> R.drawable.background_grass
+        "water" -> R.drawable.background_water
+        "fire" -> R.drawable.background_fire
+        "fighting" -> R.drawable.background_fighting
+        "poison" -> R.drawable.background_poison
+        "steel" -> R.drawable.background_steel
+        "bug" -> R.drawable.background_bug
+        "dragon" -> R.drawable.background_dragon
+        "electric" -> R.drawable.background_electric
+        "fairy" -> R.drawable.background_fairy
+        "ice" -> R.drawable.background_ice
+        "psychic" -> R.drawable.background_psychic
+        "rock" -> R.drawable.background_rock
+        "ground" -> R.drawable.background_ground
+        "dark" -> R.drawable.background_dark
+        "normal" -> R.drawable.background_normal
+        "flying" -> R.drawable.background_flying
+        "ghost" ->R.drawable.background_ghost
+        else -> { R.drawable.error}
+    }
+}
+fun adaptaNombre(nombre: String): String {
+    val devuelve = nombre
+        .replace(Regex("[áéíóúü]"), {
+            when (it.value) {
+                "á" -> "a"
+                "é" -> "e"
+                "í" -> "i"
+                "ó" -> "o"
+                "ú" -> "u"
+                "ü" -> "u"
+                else -> it.value
+            }
+        })
+        .split("-")[0] // Take only the part before the first hyphen
+        .replace("[^a-zA-Z0-9]".toRegex(), "") // Elimina otros caracteres especiales
+        .lowercase()
+    return devuelve
 }
