@@ -121,7 +121,7 @@ fun VerListaPokeAPI(modifier: Modifier = Modifier,listaApi: List<Pokemon>) {
         Box(
             modifier = Modifier
                 .fillMaxSize()
-                .background(color = Color.Red)
+                .background(color_fuego_dark)
                 .padding(top = 0.dp) // Apply padding to the Box
                 .systemBarsPadding()
                 .imePadding()
@@ -135,7 +135,6 @@ fun VerListaPokeAPI(modifier: Modifier = Modifier,listaApi: List<Pokemon>) {
                         pokemon = pokemon,
                         onClick = {
                             onCardClick = !onCardClick
-                            pokemonClicked = pokemon
                     })
                 }
             }

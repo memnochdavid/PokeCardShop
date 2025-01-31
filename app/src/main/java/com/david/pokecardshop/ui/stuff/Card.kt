@@ -275,7 +275,7 @@ fun CardPeque2(pokemon: Pokemon, onClick: () -> Unit){
 
                 onClick = {
                     click = !click
-
+                    onClick()
                 }
             )
             .indication(
