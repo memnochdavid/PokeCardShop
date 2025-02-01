@@ -1,0 +1,30 @@
+{
+  "project_info": {
+    "project_number": "123384693724",
+    "firebase_url": "https://pokecardshop-46df8-default-rtdb.europe-west1.firebasedatabase.app",
+    "project_id": "pokecardshop-46df8",
+    "storage_bucket": "pokecardshop-46df8.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:123384693724:android:61c9873cf26bcfe3574519",
+        "android_client_info": {
+          "package_name": "com.david.pokecardshop"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBtCL0tPjKPiEQtmIyKGn1TCIr6l5FvzlY"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

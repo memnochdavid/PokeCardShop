@@ -1,3 +1,5 @@
 <resources>
     <string name="app_name">PokeCardShop</string>
+    <string name="title_activity_crea_usuario">CreaUsuario</string>
+    <string name="title_activity_login">Login</string>
 </resources>

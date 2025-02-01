@@ -538,41 +538,6 @@ class PokeInfoViewModel() : ViewModel() {
         }
     }
 
-    fun getAllGen() {
-        viewModelScope.launch {
-            try {
-                val allPokemon = mutableListOf<Pokemon>()
-                // Iterate through generations 1 to 9
-                for (generationId in 1..9) {
-                    val generationResponse = service.getGeneration(generationId).awaitResponse()
-                    if (generationResponse.isSuccessful) {
-                        val pokemonSpecies = generationResponse.body()?.pokemonSpecies ?: emptyList()
-                        val pokemonInfoList = pokemonSpecies.mapNotNull { species ->
-                            val pokemonId = species.url.extractPokemonId()
-                            if (pokemonId != null) {
-                                service.getPokemonInfo(pokemonId).awaitResponse().body()
-                            } else {
-                                null
-                            }
-                        }
-                        allPokemon.addAll(pokemonInfoList)
-                    } else {
-                        Log.e(
-                            "PokeInfoViewModel",
-                            "Error fetching generation $generationId details: ${generationResponse.errorBody()?.string()}"
-                        )
-                    }
-                }
-                // Sort the combined list by Pokemon ID
-                val sortedAllPokemon = allPokemon.sortedBy { it.id }
-                // Update the LiveData with the sorted list
-                _allPokemonList.value = sortedAllPokemon
-            } catch (e: Exception) {
-                Log.e("PokeInfoViewModel", "Error fetching all Pokemon: ${e.message}")
-            }
-        }
-    }
-
 }
 
 

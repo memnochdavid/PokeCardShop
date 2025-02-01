@@ -60,16 +60,20 @@ import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.layout.layout
+import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.DpSize
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.unit.toSize
 import androidx.compose.ui.zIndex
 import androidx.constraintlayout.compose.ConstraintLayout
-import androidx.constraintlayout.compose.Dimension
 import coil.compose.rememberAsyncImagePainter
 import com.david.pokecardshop.R
 import com.david.pokecardshop.dataclass.PokeInfoViewModel
@@ -85,6 +89,7 @@ import com.david.pokecardshop.dataclass.firstMayus
 import com.david.pokecardshop.ui.theme.*
 import kotlin.math.PI
 import kotlin.math.sin
+import kotlin.text.toFloat
 
 
 @Composable
@@ -374,7 +379,6 @@ fun CardGrande(pokemon: Pokemon) {
         targetValue = if (isFlipped) 180f else 0f,
         animationSpec = tween(durationMillis = 500, easing = FastOutSlowInEasing), label = ""
     )
-
     val num=pokemon.id
     var numero = "${(num)}"
     if(numero.length == 1) numero = "00${(num)}"
@@ -390,12 +394,8 @@ fun CardGrande(pokemon: Pokemon) {
         model = "https://cloud.appwrite.io/v1/storage/buckets/677bc72c000eb680c80b/files/${adaptaNombre(pokemon.name)}/view?project=6738854a0011e2bc643f&mode=admin",
         contentScale = ContentScale.FillBounds,
     )
-//    val shimmer_color = shimmerBrush(
-//        showShimmer = true,
-//        durationMillis=3000,
-//        gradientStartColor = TypeToColor(pokemon.types[0],1),
-//        gradientEndColor = Color.White
-//    )
+
+    var cardSize by remember { mutableStateOf(Size.Zero) }
 
     val backgroundCard = painterResource(TypeToBackground(pokemon.types[0]))
     val backgroundImage = painterResource(R.drawable.background_foto)
@@ -404,16 +404,18 @@ fun CardGrande(pokemon: Pokemon) {
     viewModel.getPokemonAbility(pokemon.id)
     val habilidadName by viewModel.effect_name
 
-
+    val density = LocalDensity.current
     Card(
         modifier = Modifier
             .fillMaxWidth(0.75f)
             .wrapContentHeight()
-            //.border(15.dp, color_electrico_dark, RoundedCornerShape(15.dp))
             .padding(top = 0.dp)
+            .onSizeChanged { size ->
+                cardSize = size.toSize()
+            }
             .graphicsLayer {
                 this.rotationY = rotationY
-                cameraDistance = 8 * density
+                cameraDistance = 8 * density.density
                 if (rotationY > 90f) {
                     scaleX = -1f
                 } else {
@@ -423,7 +425,6 @@ fun CardGrande(pokemon: Pokemon) {
             .clickable {
                 isFlipped = !isFlipped
             },
-
         shape = RoundedCornerShape(15.dp),
         elevation = CardDefaults.cardElevation(defaultElevation = 20.dp),
     ){
@@ -434,7 +435,7 @@ fun CardGrande(pokemon: Pokemon) {
         ) {
             if (isFlipped) {
                 // Mostrar el dorso
-                CardGrandeDorso(pokemon = pokemon)
+                CardGrandeDorso(pokemon = pokemon,cardSize = cardSize)
             } else {
                 Image(
                     painter = backgroundCard,
@@ -564,23 +565,24 @@ fun CardGrande(pokemon: Pokemon) {
 
 
 @Composable
-fun CardGrandeDorso(pokemon: Pokemon){
+fun CardGrandeDorso(pokemon: Pokemon, cardSize: Size) {
+    val cardDpSize = DpSize(cardSize.width.dp, cardSize.height.dp)
     Card(
         modifier = Modifier
-            .padding(top = 0.dp),
+            .wrapContentSize() // This is the crucial change!
+            .size(cardDpSize),
         shape = RoundedCornerShape(15.dp),
         elevation = CardDefaults.cardElevation(defaultElevation = 20.dp),
-    ){
+    ) {
         Box(
             modifier = Modifier
-                .fillMaxSize()
+                .wrapContentSize() // This is the crucial change!
                 .background(Color.Transparent)
         ) {
             Image(
                 painter = painterResource(TypeToBackground(pokemon.types[0])),
                 contentDescription = "Background Image",
-                modifier = Modifier
-                    .matchParentSize(),
+                modifier = Modifier.matchParentSize(),
                 contentScale = ContentScale.Crop
             )
         }
