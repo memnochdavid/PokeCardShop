@@ -53,6 +53,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.scale
 import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.RectangleShape
@@ -368,6 +369,12 @@ fun CardPeque2(pokemon: Pokemon, onClick: () -> Unit){
 
 @Composable
 fun CardGrande(pokemon: Pokemon) {
+    var isFlipped by remember { mutableStateOf(false) }
+    val rotationY by animateFloatAsState(
+        targetValue = if (isFlipped) 180f else 0f,
+        animationSpec = tween(durationMillis = 500, easing = FastOutSlowInEasing), label = ""
+    )
+
     val num=pokemon.id
     var numero = "${(num)}"
     if(numero.length == 1) numero = "00${(num)}"
@@ -402,8 +409,21 @@ fun CardGrande(pokemon: Pokemon) {
         modifier = Modifier
             .fillMaxWidth(0.75f)
             .wrapContentHeight()
-            .border(15.dp, color_electrico_dark, RoundedCornerShape(15.dp))
-            .padding(top = 0.dp),
+            //.border(15.dp, color_electrico_dark, RoundedCornerShape(15.dp))
+            .padding(top = 0.dp)
+            .graphicsLayer {
+                this.rotationY = rotationY
+                cameraDistance = 8 * density
+                if (rotationY > 90f) {
+                    scaleX = -1f
+                } else {
+                    scaleX = 1f
+                }
+            }
+            .clickable {
+                isFlipped = !isFlipped
+            },
+
         shape = RoundedCornerShape(15.dp),
         elevation = CardDefaults.cardElevation(defaultElevation = 20.dp),
     ){
@@ -412,122 +432,129 @@ fun CardGrande(pokemon: Pokemon) {
                 .wrapContentSize()
                 .background(Color.Transparent)
         ) {
-            Image(
-                painter = backgroundCard,
-                contentDescription = "Background Image",
-                modifier = Modifier.matchParentSize(),
-                contentScale = ContentScale.Crop
-            )
-            ConstraintLayout(
-                modifier = Modifier
-                    .wrapContentSize()
-                    .padding(25.dp)
-            ) {
-                val (desc, foto, datos,fondo_tipo, habilidad_poke) = createRefs()
-                Row(
-                    modifier = Modifier
-                        .zIndex(5f)
-                        .fillMaxWidth()
-                        .constrainAs(datos) {
-                            top.linkTo(parent.top)
-                            start.linkTo(parent.start)
-                            end.linkTo(parent.end)
-                            bottom.linkTo(foto.top)
-                        },
-                     horizontalArrangement = Arrangement.SpaceBetween,
-                    verticalAlignment = Alignment.CenterVertically
-                ){
-                    Text(
-                        fontWeight = FontWeight.Bold,
-                        text = "#$numero",
-                        color = Color.White,
-                        fontSize = 20.sp)
-
-                    Text(
-                        fontWeight = FontWeight.Bold,
-                        text = nombrePokeLimpio.firstMayus(),
-                        color = Color.White,
-                        fontSize = 20.sp)
-                }
+            if (isFlipped) {
+                // Mostrar el dorso
+                CardGrandeDorso(pokemon = pokemon)
+            } else {
                 Image(
-                    painter = backgroundImage,
+                    painter = backgroundCard,
                     contentDescription = "Background Image",
-                    modifier = Modifier
-                        .size(250.dp)
-                        .border(8.dp, color_electrico_dark, RectangleShape)
-                        .constrainAs(fondo_tipo) {
-                            top.linkTo(foto.top)
-                            start.linkTo(foto.start)
-                            end.linkTo(foto.end)
-                            bottom.linkTo(foto.bottom)
-                        },
-                    contentScale = ContentScale.Crop,
+                    modifier = Modifier.matchParentSize(),
+                    contentScale = ContentScale.Crop
                 )
-
-                Image(
-                    painter = imagen_poke,
-                    contentDescription = "Pokemon",
+                ConstraintLayout(
                     modifier = Modifier
-                        .size(300.dp)
-                        .fillMaxSize()
-                        .constrainAs(foto) {
-                            top.linkTo(datos.bottom)
-                            start.linkTo(parent.start)
-                            end.linkTo(parent.end)
-                            //bottom.linkTo(datos.top)
-                        }
-                        .clickable {},
-                    )
-
-                Row(modifier = Modifier
-                    .zIndex(5f)
-                    .constrainAs(desc) {
-                        top.linkTo(foto.bottom)
-                        start.linkTo(parent.start)
-                        end.linkTo(parent.end)
-                        bottom.linkTo(habilidad_poke.top)
-                    }
-                ){
-
-                    Text(
-                        text = adaptaDescripcion(spanishDescription),
-                        fontSize = 12.sp,
-                        color = Color.White,
-                        modifier = Modifier
-                            .wrapContentSize()
-                            .padding(horizontal = 10.dp, vertical = 15.dp)
-
-                    )
-
-                }
-                Row(
-                    modifier = Modifier
-                        .zIndex(5f)
-                        .constrainAs(habilidad_poke) {
-                            top.linkTo(desc.bottom)
-                            start.linkTo(parent.start)
-                            end.linkTo(parent.end)
-                            //bottom.linkTo(parent.bottom)
-                        }
-                ){
-                    Text(
-                        text = habilidadName,
-                        fontSize = 12.sp,
-                        color = Color.White,
-                        modifier = Modifier
                         .wrapContentSize()
-                        .padding(horizontal = 10.dp, vertical = 15.dp)
-                    )
-                    Text(
-                        text = habilidad,
-                        fontSize = 12.sp,
-                        color = Color.White,
+                        .padding(25.dp)
+                ) {
+                    val (desc, foto, datos,fondo_tipo, habilidad_poke) = createRefs()
+                    Row(
                         modifier = Modifier
-                            .wrapContentSize()
-                            .padding(horizontal = 10.dp, vertical = 15.dp)
+                            .zIndex(5f)
+                            .fillMaxWidth()
+                            .constrainAs(datos) {
+                                top.linkTo(parent.top)
+                                start.linkTo(parent.start)
+                                end.linkTo(parent.end)
+                                bottom.linkTo(foto.top)
+                            },
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically
+                    ){
+                        Text(
+                            fontWeight = FontWeight.Bold,
+                            text = "#$numero",
+                            color = Color.White,
+                            fontSize = 20.sp)
+
+                        Text(
+                            fontWeight = FontWeight.Bold,
+                            text = nombrePokeLimpio.firstMayus(),
+                            color = Color.White,
+                            fontSize = 20.sp)
+                    }
+                    Image(
+                        painter = backgroundImage,
+                        contentDescription = "Background Image",
+                        modifier = Modifier
+                            .size(250.dp)
+                            .border(8.dp, color_electrico_dark, RectangleShape)
+                            .constrainAs(fondo_tipo) {
+                                top.linkTo(foto.top)
+                                start.linkTo(foto.start)
+                                end.linkTo(foto.end)
+                                bottom.linkTo(foto.bottom)
+                            },
+                        contentScale = ContentScale.Crop,
                     )
+
+                    Image(
+                        painter = imagen_poke,
+                        contentDescription = "Pokemon",
+                        modifier = Modifier
+                            .size(300.dp)
+                            .fillMaxSize()
+                            .constrainAs(foto) {
+                                top.linkTo(datos.bottom)
+                                start.linkTo(parent.start)
+                                end.linkTo(parent.end)
+                                //bottom.linkTo(datos.top)
+                            }
+                    )
+
+                    Row(modifier = Modifier
+                        .zIndex(5f)
+                        .padding(top = 3.dp)
+                        .constrainAs(desc) {
+                            top.linkTo(foto.bottom)
+                            start.linkTo(parent.start)
+                            end.linkTo(parent.end)
+                            bottom.linkTo(habilidad_poke.top)
+                        }
+                    ){
+                        Text(
+                            text = adaptaDescripcion(spanishDescription),
+                            fontSize = 10.sp,
+                            color = Color.White,
+                            modifier = Modifier
+                                .wrapContentSize()
+                                .padding(horizontal = 10.dp)
+
+                        )
+
+                    }
+                    Row(
+                        modifier = Modifier
+                            .zIndex(5f)
+                            .padding(top = 3.dp)
+                            .constrainAs(habilidad_poke) {
+                                top.linkTo(desc.bottom)
+                                start.linkTo(parent.start)
+                                end.linkTo(parent.end)
+                                bottom.linkTo(parent.bottom)
+                            }
+                    ){
+                        Text(
+                            text = habilidadName,
+                            fontSize = 10.sp,
+                            fontWeight = FontWeight.Bold,
+                            color = Color.White,
+                            modifier = Modifier
+                                .wrapContentSize()
+                                .padding(horizontal = 10.dp)
+                        )
+                        Text(
+                            text = habilidad,
+                            fontSize = 10.sp,
+                            color = Color.White,
+                            modifier = Modifier
+                                .wrapContentSize()
+                                .padding(horizontal = 10.dp)
+                        )
+                    }
                 }
             }
+
         }
 
     }
@@ -540,21 +567,23 @@ fun CardGrande(pokemon: Pokemon) {
 fun CardGrandeDorso(pokemon: Pokemon){
     Card(
         modifier = Modifier
-            .fillMaxWidth(0.75f)
-            .wrapContentHeight()
-            .border(15.dp, color_electrico_dark, RoundedCornerShape(15.dp))
             .padding(top = 0.dp),
         shape = RoundedCornerShape(15.dp),
         elevation = CardDefaults.cardElevation(defaultElevation = 20.dp),
     ){
-        Image(
-            painter = painterResource(TypeToBackground(pokemon.types[0])),
-            contentDescription = "Background Image",
+        Box(
             modifier = Modifier
-                .fillMaxWidth(0.75f)
-                .wrapContentHeight()
-                .padding(top = 0.dp)
-        )
+                .fillMaxSize()
+                .background(Color.Transparent)
+        ) {
+            Image(
+                painter = painterResource(TypeToBackground(pokemon.types[0])),
+                contentDescription = "Background Image",
+                modifier = Modifier
+                    .matchParentSize(),
+                contentScale = ContentScale.Crop
+            )
+        }
     }
 }
 
