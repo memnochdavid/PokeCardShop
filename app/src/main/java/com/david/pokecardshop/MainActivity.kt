@@ -44,6 +44,7 @@ import androidx.navigation.compose.rememberNavController
 import com.david.pokecardshop.dataclass.PokeInfoViewModel
 import com.david.pokecardshop.dataclass.Pokemon
 import com.david.pokecardshop.dataclass.Usuario
+import com.david.pokecardshop.dataclass.UsuarioFromKey
 import com.david.pokecardshop.dataclass.model.Menu
 import com.david.pokecardshop.dataclass.model.Navigation
 import com.david.pokecardshop.dataclass.model.Screen
@@ -56,13 +57,12 @@ import com.google.firebase.database.FirebaseDatabase
 import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.launch
 
-var refBBDD by mutableStateOf<DatabaseReference>(FirebaseDatabase.getInstance().reference)
-var usuario_key by mutableStateOf("")
+
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        enableEdgeToEdge()
+        //enableEdgeToEdge()
         setContent {
             PokeCardShopTheme {
                 MainScreen()
@@ -77,6 +77,15 @@ fun MainScreen() {
     val drawerState = rememberDrawerState(initialValue = DrawerValue.Closed)
     val scope = rememberCoroutineScope()
     var selectedItem by remember { mutableIntStateOf(0) }
+    val sesion = UsuarioFromKey(usuario_key, refBBDD)
+
+    // New: Get the current route from the selected item
+    val currentRoute = when (selectedItem) {
+        0 -> Screen.Lista.route
+        1 -> if (sesion.admin) Screen.CrearCarta.route else Screen.Opciones.route
+        2 -> Screen.Opciones.route
+        else -> Screen.Lista.route // Default to Lista
+    }
 
     ModalNavigationDrawer(
         drawerState = drawerState,
@@ -85,6 +94,18 @@ fun MainScreen() {
                 selectedItem = selectedItem,
                 onItemSelected = { index ->
                     selectedItem = index
+                    // New: Navigate when an item is selected
+                    scope.launch {
+                        navController.navigate(
+                            when (index) {
+                                0 -> Screen.Lista.route
+                                1 -> if (sesion.admin) Screen.CrearCarta.route else Screen.Opciones.route
+                                2 -> Screen.Opciones.route
+                                else -> Screen.Lista.route
+                            }
+                        )
+                        drawerState.close()
+                    }
                 },
                 onCloseDrawer = { scope.launch { drawerState.close() } }
             )
@@ -98,10 +119,20 @@ fun MainScreen() {
                 onClick = { scope.launch { drawerState.open() } },
                 modifier = Modifier
                     .align(Alignment.TopEnd)
-                    .padding(16.dp)
+                    .padding(top = 32.dp, end = 16.dp)
             ) {
                 Icon(Icons.Filled.Menu, contentDescription = "Abrir menú")
             }
+        }
+    }
+    // New: Navigate when the current route changes
+    LaunchedEffect(currentRoute) {
+        navController.navigate(currentRoute) {
+            popUpTo(navController.graph.startDestinationId) {
+                saveState = true
+            }
+            launchSingleTop = true
+            restoreState = true
         }
     }
 }

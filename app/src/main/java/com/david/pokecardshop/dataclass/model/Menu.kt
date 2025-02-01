@@ -1,5 +1,6 @@
 package com.david.pokecardshop.dataclass.model
 
+import android.util.Log
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
@@ -9,6 +10,7 @@ import androidx.compose.foundation.layout.widthIn
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.List
 import androidx.compose.material.icons.filled.AccountBox
+import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Email
 import androidx.compose.material.icons.filled.Face
 import androidx.compose.material.icons.filled.Person
@@ -35,9 +37,13 @@ import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import com.david.pokecardshop.VerListaPokeAPI
+import com.david.pokecardshop.dataclass.FormularioCarta
 import com.david.pokecardshop.dataclass.Pokemon
+import com.david.pokecardshop.dataclass.UsuarioFromKey
 import com.david.pokecardshop.listaByGen
+import com.david.pokecardshop.refBBDD
 import com.david.pokecardshop.ui.theme.*
+import com.david.pokecardshop.usuario_key
 
 @Composable
 fun Menu(
@@ -45,7 +51,14 @@ fun Menu(
     onItemSelected: (Int) -> Unit,
     onCloseDrawer: () -> Unit,
 ) {
-    val items = listOf("Lista", "Opciones")
+    val sesion = UsuarioFromKey(usuario_key, refBBDD = refBBDD)
+    Log.d("ADMIN_menu", "$sesion")
+    Log.d("usuario_key_menu", usuario_key)
+    val items = if (!sesion.admin) {
+        listOf("Lista", "Opciones")
+    } else {
+        listOf("Lista", "Crear Carta", "Opciones")
+    }
     val selectedColor = blanco80
     val unselectedColor = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f)
     val selectedtextColor = negro80
@@ -62,14 +75,15 @@ fun Menu(
                     icon = {
                         when (item) {
                             "Lista" -> Icon(Icons.AutoMirrored.Filled.List, contentDescription = item)
+                            "Crear Carta" -> Icon(Icons.Filled.Add, contentDescription = item)
                             "Opciones" -> Icon(Icons.Filled.Settings, contentDescription = item)
+                            else -> Icon(Icons.AutoMirrored.Filled.List, contentDescription = item)
                         }
                     },
                     label = { Text(item) },
                     selected = selectedItem == index,
                     onClick = {
                         onItemSelected(index)
-                        onCloseDrawer()
                     },
                     modifier = Modifier
                         .padding(NavigationDrawerItemDefaults.ItemPadding)
@@ -83,6 +97,7 @@ fun Menu(
 
 sealed class Screen(val route: String) {
     object Lista : Screen("Lista")
+    object CrearCarta : Screen("CrearCarta")
     object Opciones : Screen("Opciones")
 }
 @Composable
@@ -108,6 +123,13 @@ fun Navigation(navController: NavHostController, modifier: Modifier) {
                     ) {
                         Text(text = "Opciones Screen", style = MaterialTheme.typography.headlineLarge)
                     }
+                }
+            }
+        }
+        composable(Screen.CrearCarta.route) {
+            PokeCardShopTheme {
+                Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
+                    FormularioCarta( modifier = Modifier.padding(innerPadding))
                 }
             }
         }

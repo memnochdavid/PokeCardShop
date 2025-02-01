@@ -2,6 +2,7 @@ package com.david.pokecardshop
 
 import android.content.Intent
 import android.os.Bundle
+import android.util.Log
 import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -58,11 +59,13 @@ import com.david.pokecardshop.ui.stuff.CardPeque2
 import com.david.pokecardshop.ui.theme.*
 import com.google.firebase.database.DataSnapshot
 import com.google.firebase.database.DatabaseError
+import com.google.firebase.database.DatabaseReference
 import com.google.firebase.database.FirebaseDatabase
 import com.google.firebase.database.ValueEventListener
 
 var isLoadingAPI by mutableStateOf(true)
-
+var refBBDD by mutableStateOf<DatabaseReference>(FirebaseDatabase.getInstance().reference)
+var usuario_key by mutableStateOf("")
 
 class Login : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -205,7 +208,6 @@ fun Login(sesionUser: Usuario, modifier: Modifier) {
                                             intent.putExtra("sesion", checkUser.key)
                                             intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
                                             context.startActivity(intent)
-
                                             break
                                         }
                                     }
