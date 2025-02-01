@@ -1,13 +1,5 @@
 package com.david.pokecardshop.dataclass
 
-import androidx.compose.runtime.getValue
-import androidx.compose.ui.layout.ContentScale
-import coil.compose.rememberAsyncImagePainter
-import com.david.pokecardshop.R
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
-
 data class Carta(
     var number: String="",
     var nombre: String="",

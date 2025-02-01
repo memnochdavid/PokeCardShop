@@ -15,14 +15,23 @@ import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.DrawerValue
+import androidx.compose.material3.FloatingActionButton
+import androidx.compose.material3.Icon
+import androidx.compose.material3.ModalNavigationDrawer
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.rememberDrawerState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.livedata.observeAsState
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
@@ -31,9 +40,13 @@ import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.navigation.compose.rememberNavController
 import com.david.pokecardshop.dataclass.PokeInfoViewModel
 import com.david.pokecardshop.dataclass.Pokemon
 import com.david.pokecardshop.dataclass.Usuario
+import com.david.pokecardshop.dataclass.model.Menu
+import com.david.pokecardshop.dataclass.model.Navigation
+import com.david.pokecardshop.dataclass.model.Screen
 import com.david.pokecardshop.ui.stuff.CardGrande
 import com.david.pokecardshop.ui.stuff.CardPeque2
 import com.david.pokecardshop.ui.theme.PokeCardShopTheme
@@ -41,6 +54,7 @@ import com.david.pokecardshop.ui.theme.*
 import com.google.firebase.database.DatabaseReference
 import com.google.firebase.database.FirebaseDatabase
 import kotlinx.coroutines.flow.filter
+import kotlinx.coroutines.launch
 
 var refBBDD by mutableStateOf<DatabaseReference>(FirebaseDatabase.getInstance().reference)
 var usuario_key by mutableStateOf("")
@@ -51,17 +65,55 @@ class MainActivity : ComponentActivity() {
         enableEdgeToEdge()
         setContent {
             PokeCardShopTheme {
-                Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
-                    VerListaPokeAPI(modifier = Modifier.padding(innerPadding), listaApi=listaByGen(1))
-                }
+                MainScreen()
             }
         }
     }
 }
 
 @Composable
+fun MainScreen() {
+    val navController = rememberNavController()
+    val drawerState = rememberDrawerState(initialValue = DrawerValue.Closed)
+    val scope = rememberCoroutineScope()
+    var selectedItem by remember { mutableIntStateOf(0) }
+
+    ModalNavigationDrawer(
+        drawerState = drawerState,
+        drawerContent = {
+            Menu(
+                selectedItem = selectedItem,
+                onItemSelected = { index ->
+                    selectedItem = index
+                },
+                onCloseDrawer = { scope.launch { drawerState.close() } }
+            )
+        }
+    ) {
+        Box {
+            Scaffold() { paddingValues ->
+                Navigation(navController = navController, modifier = Modifier.padding(paddingValues))
+            }
+            FloatingActionButton(
+                onClick = { scope.launch { drawerState.open() } },
+                modifier = Modifier
+                    .align(Alignment.TopEnd)
+                    .padding(16.dp)
+            ) {
+                Icon(Icons.Filled.Menu, contentDescription = "Abrir menú")
+            }
+        }
+    }
+}
+
+
+
+
+
+@Composable
 fun VerListaPokeAPI(modifier: Modifier = Modifier,listaApi: List<Pokemon>) {
     var onCardClick by remember { mutableStateOf(false) }
+    //var pokemonClicked by remember { mutableStateOf(List<Pokemon>())}
     var listaFiltrada by remember { mutableStateOf(listaApi) }
     if (isLoadingAPI) { //se asegura de haber cargado los datos de la nube antes de empezar a mostrar nada
         Box(

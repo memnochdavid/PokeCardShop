@@ -13,6 +13,7 @@ lifecycleRuntimeKtx = "2.8.7"
 lifecycle-viewmodel-compose = "2.6.2"
 activityCompose = "1.10.0"
 composeBom = "2024.04.01"
+navigationCompose = "2.8.6"
 retrofit = "2.9.0"
 runtimeLivedata = "1.7.7"
 firebaseDatabaseKtx = "21.0.0"
@@ -20,6 +21,7 @@ firebaseDatabaseKtx = "21.0.0"
 [libraries]
 androidx-constraintlayout-compose = { module = "androidx.constraintlayout:constraintlayout-compose", version.ref = "constraintlayoutCompose" }
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
+androidx-navigation-compose = { module = "androidx.navigation:navigation-compose", version.ref = "navigationCompose" }
 coil-compose = { module = "io.coil-kt:coil-compose", version.ref = "coilCompose" }
 converter-gson = { module = "com.squareup.retrofit2:converter-gson", version.ref = "converterGson" }
 firebase-analytics = { module = "com.google.firebase:firebase-analytics" }
