@@ -44,6 +44,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
@@ -392,6 +393,10 @@ fun CardGrande(pokemon: Pokemon) {
     val backgroundCard = painterResource(TypeToBackground(pokemon.types[0]))
     val backgroundImage = painterResource(R.drawable.background_foto)
 
+    val habilidad by viewModel.effect_description
+    viewModel.getPokemonAbility(pokemon.id)
+    val habilidadName by viewModel.effect_name
+
 
     Card(
         modifier = Modifier
@@ -418,7 +423,7 @@ fun CardGrande(pokemon: Pokemon) {
                     .wrapContentSize()
                     .padding(25.dp)
             ) {
-                val (desc, foto, datos,fondo_tipo) = createRefs()
+                val (desc, foto, datos,fondo_tipo, habilidad_poke) = createRefs()
                 Row(
                     modifier = Modifier
                         .zIndex(5f)
@@ -480,11 +485,13 @@ fun CardGrande(pokemon: Pokemon) {
                         top.linkTo(foto.bottom)
                         start.linkTo(parent.start)
                         end.linkTo(parent.end)
-                        bottom.linkTo(parent.bottom)
+                        bottom.linkTo(habilidad_poke.top)
                     }
                 ){
+
                     Text(
                         text = adaptaDescripcion(spanishDescription),
+                        fontSize = 12.sp,
                         color = Color.White,
                         modifier = Modifier
                             .wrapContentSize()
@@ -493,6 +500,33 @@ fun CardGrande(pokemon: Pokemon) {
                     )
 
                 }
+                Row(
+                    modifier = Modifier
+                        .zIndex(5f)
+                        .constrainAs(habilidad_poke) {
+                            top.linkTo(desc.bottom)
+                            start.linkTo(parent.start)
+                            end.linkTo(parent.end)
+                            //bottom.linkTo(parent.bottom)
+                        }
+                ){
+                    Text(
+                        text = habilidadName,
+                        fontSize = 12.sp,
+                        color = Color.White,
+                        modifier = Modifier
+                        .wrapContentSize()
+                        .padding(horizontal = 10.dp, vertical = 15.dp)
+                    )
+                    Text(
+                        text = habilidad,
+                        fontSize = 12.sp,
+                        color = Color.White,
+                        modifier = Modifier
+                            .wrapContentSize()
+                            .padding(horizontal = 10.dp, vertical = 15.dp)
+                    )
+                }
             }
         }
 
@@ -500,32 +534,7 @@ fun CardGrande(pokemon: Pokemon) {
 
 
 }
-@Composable
-fun FlipCard(pokemon: Pokemon) {
-    var isFront by remember { mutableStateOf(true) }
-    var rotationY by animateFloatAsState(
-        targetValue = if (isFront) 0f else 180f,
-        animationSpec = tween(durationMillis = 500, easing = FastOutSlowInEasing),
-        label = "rotationY"
-    )
 
-    Box(
-        modifier = Modifier
-            .fillMaxWidth(0.75f)
-            .wrapContentHeight()
-            .clickable { isFront = !isFront }
-            .graphicsLayer {
-                rotationY = rotationY
-                cameraDistance = 8 * density
-            }
-    ) {
-        if (rotationY <= 90f) {
-            CardGrande(pokemon = pokemon, modifier = Modifier.zIndex(1f))
-        } else {
-            CardGrandeDorso(pokemon = pokemon, modifier = Modifier.zIndex(1f))
-        }
-    }
-}
 
 @Composable
 fun CardGrandeDorso(pokemon: Pokemon){

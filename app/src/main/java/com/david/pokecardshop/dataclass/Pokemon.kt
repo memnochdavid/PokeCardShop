@@ -47,12 +47,23 @@ data class Pokemon(
     @Expose @SerializedName("types") val types: List<Type>,
     //@Expose @SerializedName("color") val color: String,
     @Expose @SerializedName("flavor_text_entries") val flavorTextEntries: List<FlavorTextEntry>,
+    @Expose @SerializedName("abilities") val abilities: List<PokemonAbilitySpecies> = emptyList(),
 // added property for the Spanish flavor text entries
     var spanishFlavorTextEntries: List<String> = emptyList()
 )
 
 data class FlavorTextEntry(
     @Expose @SerializedName("flavor_text") val flavorText: String,
+    @Expose @SerializedName("language") val language: Language
+)
+data class PokemonAbilitySpecies(
+    @Expose @SerializedName("is_hidden") val isHidden: Boolean,
+    @Expose @SerializedName("slot") val slot: Int,
+    @Expose @SerializedName("pokemon") val pokemon: PokemonInfo
+)
+
+data class EffectEntry(
+    @Expose @SerializedName("effect") val effect: String,
     @Expose @SerializedName("language") val language: Language
 )
 
@@ -72,9 +83,16 @@ data class Sprites(
 )
 
 data class Ability(
-    @Expose @SerializedName("ability") val ability: AbilityInfo,
-    @Expose @SerializedName("is_hidden") val isHidden: Boolean,
-    @Expose @SerializedName("slot") val slot: Int
+    @Expose @SerializedName("id") val id: Int,
+    @Expose @SerializedName("name") val name: String,
+    @Expose @SerializedName("effect_entries") val effectEntries: List<EffectEntry>,
+    @Expose @SerializedName("flavor_text_entries") val flavorTextEntries: List<FlavorTextEntry>,
+    @Expose @SerializedName("names") val names: List<Name>,
+    @Expose @SerializedName("pokemon") val pokemon: List<PokemonAbilitySpecies>
+)
+data class Name(
+    @Expose @SerializedName("name") val name: String,
+    @Expose @SerializedName("language") val language: Language
 )
 data class PokeResult (
     @Expose @SerializedName("name") val name: String,
@@ -181,6 +199,25 @@ data class FromDescription(
     @Expose @SerializedName("language") val language: Language
 )
 
+data class PokemonAbility(
+    @Expose @SerializedName("is_hidden") val isHidden: Boolean,
+    @Expose @SerializedName("slot") val slot: Int,
+    @Expose @SerializedName("ability") val ability: PokemonInfo
+)
+data class PokemonInfo(
+    @Expose @SerializedName("name") val name: String,
+    @Expose @SerializedName("url") val url: String
+)
+data class PokemonSpecies(
+    @Expose @SerializedName("id") val id: Int,
+    @Expose @SerializedName("name") val name: String,
+    @Expose @SerializedName("order") val order: Int,
+    @Expose @SerializedName("flavor_text_entries") val flavorTextEntries: List<FlavorTextEntry>,
+    @Expose @SerializedName("color") val color: Color,
+    @Expose @SerializedName("abilities") val abilities: List<PokemonAbilitySpecies> = emptyList()
+)
+
+
 class PokemonDataRepository(private val viewModel: PokeInfoViewModel) {
 
     suspend fun getPokemonListByGen(gen: Int): List<Pokemon> {
@@ -190,6 +227,12 @@ class PokemonDataRepository(private val viewModel: PokeInfoViewModel) {
             .first() // Get the first non-empty list
     }
 }
+data class AbilityListResponse(
+    val count: Int,
+    val next: String?,
+    val previous: String?,
+    val results: List<AbilityInfo>
+)
 
 object RetrofitClient {
 
@@ -229,6 +272,11 @@ class PokeInfoViewModel() : ViewModel() {
     private val _allPokemonList = MutableLiveData<List<Pokemon>>(emptyList())
     val allPokemonList: LiveData<List<Pokemon>> = _allPokemonList
 
+    private val _effect_description = mutableStateOf("")
+    val effect_description: State<String> = _effect_description
+    private val _effect_name = mutableStateOf("")
+    val effect_name: State<String> = _effect_name
+
     fun getPokemonInfo(id: Int){
         val call = service.getPokemonInfo(id)
 
@@ -267,28 +315,157 @@ class PokeInfoViewModel() : ViewModel() {
             }
         }
     }
-//    fun getPokemonColor(id: Int) {
-//        viewModelScope.launch {
-//            val callColor = service.getPokemonSpecies(id)
-//            try {
-//                val response = callColor.awaitResponse()
-//                if (response.isSuccessful) {
-//                    val pokemon = response.body()
-//                    val color = pokemon?.color
-//                    _pokemonColor.value = pokemonColor.value
-//                } else {
-//                    // Handle error
-//                    Log.e("PokeInfoViewModel", "Error fetching Pokemon color: ${response.errorBody()?.string()}")
-//                    _pokemonColor.value = "Error loading color"
-//                }
-//            } catch (e: Exception) {
-//                // Handle network or other errors
-//                Log.e("PokeInfoViewModel", "Error fetching Pokemon description: ${e.message}")
-//                _pokemonColor.value = "Error loading color"
-//            }
-//        }
-//
-//    }
+    fun getAbilityDetails(abilityId: Int) {
+        viewModelScope.launch {
+            val callDescription = service.getPokemonAbility(abilityId)
+            try {
+                val response = callDescription.awaitResponse()
+                if (response.isSuccessful) {
+                    val ability: Ability? = response.body()
+                    if (ability != null) {
+                        // Use ability.effectEntries and ability.flavorTextEntries
+                        val spanishEffectEntry = ability.effectEntries.firstOrNull { it.language.name == "es" }
+                        val spanishEffectDescription = spanishEffectEntry?.effect ?: ""
+
+                        val spanishFlavorTextEntry = ability.flavorTextEntries.firstOrNull { it.language.name == "es" }
+                        val spanishFlavorText = spanishFlavorTextEntry?.flavorText ?: ""
+
+                        _effect_description.value = when {
+                            spanishFlavorText.isNotEmpty() -> spanishFlavorText
+                            spanishEffectDescription.isNotEmpty() -> spanishEffectDescription
+                            else -> "No description available in Spanish"
+                        }
+
+                        // Find the Spanish name
+                        val spanishNameEntry = ability.names.firstOrNull { it.language.name == "es" }
+                        val spanishName = spanishNameEntry?.name ?: ability.name // Fallback to English name if Spanish not found
+                        _effect_name.value = spanishName
+                    } else {
+                        _effect_description.value = "Error: Empty response body"
+                        Log.e("PokeInfoViewModel", "Error: Empty response body")
+                    }
+                } else {
+                    val errorBody = response.errorBody()?.string() ?: "No error body"
+                    Log.e(
+                        "PokeInfoViewModel",
+                        "Error fetching ability details: ${response.code()} - $errorBody"
+                    )
+                    _effect_description.value = "Error loading description"
+                }
+            } catch (e: Exception) {
+                Log.e("PokeInfoViewModel", "Error fetching ability details: ${e.message}")
+                _effect_description.value = "Error loading description"
+            }
+        }
+    }
+
+    fun getPokemonAbility(pokemonId: Int) {
+        viewModelScope.launch {
+            try {
+                var offset = 0
+                val limit = 367 // Puedes ajustar el límite si lo deseas
+                var allAbilities: MutableList<AbilityInfo> = mutableListOf()
+                var hasMore = true
+
+                while (hasMore) {
+                    val response = service.getAbilityList(limit, offset).awaitResponse()
+                    if (response.isSuccessful) {
+                        val abilityListResponse = response.body()
+                        if (abilityListResponse != null) {
+                            allAbilities.addAll(abilityListResponse.results)
+                            // Check if there are more pages
+                            hasMore = abilityListResponse.next != null
+                            offset += limit
+                        } else {
+                            hasMore = false
+                        }
+                    } else {
+                        val errorBody = response.errorBody()?.string() ?: "No error body"
+                        Log.e(
+                            "PokeInfoViewModel",
+                            "Error fetching ability list: ${response.code()} - $errorBody"
+                        )
+                        _effect_description.value = "Error loading description"
+                        hasMore = false
+                    }
+                }
+
+                // Ahora que tenemos todas las habilidades, buscamos la del Pokémon
+                for (abilityInfo in allAbilities) {
+                    val abilityId = abilityInfo.url.extractAbilityId()
+                    if (abilityId != null) {
+                        val abilityResponse = service.getPokemonAbility(abilityId).awaitResponse()
+                        if (abilityResponse.isSuccessful) {
+                            val ability = abilityResponse.body()
+                            if (ability != null) {
+                                val pokemonFound = ability.pokemon.any { it.pokemon.url.contains("/pokemon/$pokemonId/") }
+                                if (pokemonFound) {
+                                    getAbilityDetails(abilityId)
+                                    return@launch // Encontramos la habilidad, salimos del bucle
+                                }
+                            }
+                        } else {
+                            val errorBody = abilityResponse.errorBody()?.string() ?: "No error body"
+                            Log.e(
+                                "PokeInfoViewModel",
+                                "Error fetching ability details: ${abilityResponse.code()} - $errorBody"
+                            )
+                        }
+                    }
+                }
+                // Si llegamos aquí, no se encontró la habilidad para el Pokémon
+                _effect_description.value = "No se encontró habilidad para este Pokémon"
+                _effect_name.value = ""
+            } catch (e: Exception) {
+                Log.e("PokeInfoViewModel", "Error fetching ability list: ${e.message}")
+                _effect_description.value = "Error loading description"
+            }
+        }
+    }
+
+
+    fun getEffect(id: Int) {
+        viewModelScope.launch {
+            val callDescription = service.getPokemonAbility(id)
+            try {
+                val response = callDescription.awaitResponse()
+                if (response.isSuccessful) {
+                    val ability: Ability? = response.body()
+                    if (ability != null) {
+                        // Use ability.effectEntries and ability.flavorTextEntries
+                        val spanishEffectEntry = ability.effectEntries.firstOrNull { it.language.name == "es" }
+                        val spanishEffectDescription = spanishEffectEntry?.effect ?: ""
+
+                        val spanishFlavorTextEntry = ability.flavorTextEntries.firstOrNull { it.language.name == "es" }
+                        val spanishFlavorText = spanishFlavorTextEntry?.flavorText ?: ""
+
+                        _effect_description.value = when {
+                            spanishFlavorText.isNotEmpty() -> spanishFlavorText
+                            spanishEffectDescription.isNotEmpty() -> spanishEffectDescription
+                            else -> "No description available in Spanish"
+                        }
+
+                        // Find the Spanish name
+                        val spanishNameEntry = ability.names.firstOrNull { it.language.name == "es" }
+                        val spanishName = spanishNameEntry?.name ?: ability.name // Fallback to English name if Spanish not found
+                        _effect_name.value = spanishName
+                    } else {
+                        _effect_description.value = "Error: Empty response body"
+                        Log.e("PokeInfoViewModel", "Error: Empty response body")
+                    }
+                } else {
+                    Log.e(
+                        "PokeInfoViewModel",
+                        "Error fetching Pokemon description: ${response.errorBody()?.string()}"
+                    )
+                    _effect_description.value = "Error loading description"
+                }
+            } catch (e: Exception) {
+                Log.e("PokeInfoViewModel", "Error fetching Pokemon description: ${e.message}")
+                _effect_description.value = "Error loading description"
+            }
+        }
+    }
 
     fun getPokemonList(pokemonIds: List<Int>) {
         var apiService = RetrofitClient.create(ApiService::class.java)
@@ -568,6 +745,8 @@ fun adaptaNombre(nombre: String): String {
         .split("-")[0] // Take only the part before the first hyphen
         .replace("[^a-zA-Z0-9]".toRegex(), "") // Elimina otros caracteres especiales
         .lowercase()
+    //para que encuentre las fotos en appwrite. Algunos nombres no están correctamente allí. Mea culpa
+    if(nombre.equals("beedril")) return "beedrill"
     return devuelve
 }
 
@@ -575,4 +754,10 @@ fun adaptaDescripcion(desc: String): String {
     val devuelve = desc
         .replace("\n","")
     return devuelve
+}
+
+fun String.extractAbilityId(): Int? {
+    val regex = Regex("/ability/(\\d+)/")
+    val matchResult = regex.find(this)
+    return matchResult?.groupValues?.get(1)?.toIntOrNull()
 }

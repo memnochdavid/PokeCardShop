@@ -1,5 +1,7 @@
 package com.david.pokecardshop.api
 
+import com.david.pokecardshop.dataclass.Ability
+import com.david.pokecardshop.dataclass.AbilityListResponse
 import com.david.pokecardshop.dataclass.Pokemon
 import com.david.pokecardshop.dataclass.TypeListResponse
 import com.david.pokecardshop.dataclass.model.EvolutionChain
@@ -22,4 +24,11 @@ interface ApiService {
     fun getGeneration(@Path("id") id: Int): Call<Generation>
     @GET("type")
     fun getTypeList(): Call<TypeListResponse>
+    @GET("ability/{id}")
+    fun getPokemonAbility(@Path("id") id: Int): Call<Ability>
+    @GET("ability")
+    fun getAbilityList(
+        @Query("limit") limit: Int,
+        @Query("offset") offset: Int
+    ): Call<AbilityListResponse>
 }
