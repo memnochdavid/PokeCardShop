@@ -36,6 +36,8 @@ import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Icon
@@ -588,6 +590,31 @@ fun CardGrandeDorso(pokemon: Pokemon, cardSize: Size) {
         }
     }
 }
+
+@Composable
+fun Boton(text: String, onClick: () -> Unit) {
+    val shape = RoundedCornerShape(10.dp)
+    val colores_boton = ButtonDefaults.buttonColors(
+        containerColor = azul60,
+        contentColor = Color.White
+    )
+    Button(
+        onClick = onClick, // Now it's a regular lambda
+        modifier = Modifier.padding(16.dp),
+        shape = shape,
+        colors = colores_boton
+    ) {
+        Text(text = text, fontSize = 15.sp)
+    }
+}
+
+
+
+
+
+
+
+
 
 @Composable
 fun shimmerBrush(

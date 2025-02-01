@@ -37,6 +37,7 @@ import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import com.david.pokecardshop.VerListaPokeAPI
+import com.david.pokecardshop.dataclass.CreaCarta
 import com.david.pokecardshop.dataclass.FormularioCarta
 import com.david.pokecardshop.dataclass.Pokemon
 import com.david.pokecardshop.dataclass.UsuarioFromKey
@@ -129,7 +130,7 @@ fun Navigation(navController: NavHostController, modifier: Modifier) {
         composable(Screen.CrearCarta.route) {
             PokeCardShopTheme {
                 Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
-                    FormularioCarta( modifier = Modifier.padding(innerPadding))
+                    CreaCarta( modifier = Modifier.padding(innerPadding))
                 }
             }
         }

@@ -10,6 +10,7 @@ import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
 import android.util.Log
 import androidx.compose.runtime.State
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.graphics.Color
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.viewModelScope
@@ -33,7 +34,7 @@ data class Pokemon(
     //@Expose @SerializedName("base_experience") val baseExperience: Int,
     //@Expose @SerializedName("height") val height: Int,
     //@Expose @SerializedName("is_default") val isDefault: Boolean,
-    @Expose @SerializedName("order") val order: Int,
+    //@Expose @SerializedName("order") val order: Int,
     //@Expose @SerializedName("weight") val weight: Int,
     @Expose @SerializedName("sprites") val sprites: Sprites,
     //@Expose @SerializedName("abilities") val abilities: List<Ability>,
@@ -49,7 +50,7 @@ data class Pokemon(
     @Expose @SerializedName("flavor_text_entries") val flavorTextEntries: List<FlavorTextEntry>,
     @Expose @SerializedName("abilities") val abilities: List<PokemonAbilitySpecies> = emptyList(),
 // added property for the Spanish flavor text entries
-    var spanishFlavorTextEntries: List<String> = emptyList()
+    //var spanishFlavorTextEntries: String=""
 )
 
 data class FlavorTextEntry(
@@ -269,6 +270,7 @@ class PokeInfoViewModel() : ViewModel() {
 
     private val _pokemonTypeList = MutableLiveData<List<TypeInfo>>(emptyList())
     val pokemonTypeList: LiveData<List<TypeInfo>> = _pokemonTypeList
+
     private val _allPokemonList = MutableLiveData<List<Pokemon>>(emptyList())
     val allPokemonList: LiveData<List<Pokemon>> = _allPokemonList
 
@@ -277,20 +279,17 @@ class PokeInfoViewModel() : ViewModel() {
     private val _effect_name = mutableStateOf("")
     val effect_name: State<String> = _effect_name
 
-    fun getPokemonInfo(id: Int){
-        val call = service.getPokemonInfo(id)
-
+    fun getPokemonInfo(name: String){
+        val call = service.getPokemonInfoFromName(name)
         call.enqueue(object : Callback<Pokemon> {
             override fun onResponse(call: Call<Pokemon>, response: Response<Pokemon>) {
                 response.body()?.let { pokemon ->
                     pokemonInfo.postValue(pokemon)
                 }
             }
-
             override fun onFailure(call: Call<Pokemon>, t: Throwable) {
                 call.cancel()
             }
-
         })
 
     }
@@ -302,7 +301,28 @@ class PokeInfoViewModel() : ViewModel() {
                 if (response.isSuccessful) {
                     val pokemon = response.body()
                     val spanishEntries = pokemon?.flavorTextEntries?.filter { it.language.name == "es" }
-                    _spanishDescription.value = spanishEntries?.firstOrNull()?.flavorText ?: ""
+                    _spanishDescription.value = spanishEntries?.firstOrNull()?.flavorText ?: "caca"
+                } else {
+                    // Handle error
+                    Log.e("PokeInfoViewModel", "Error fetching Pokemon description: ${response.errorBody()?.string()}")
+                    _spanishDescription.value = "Error loading description"
+                }
+            } catch (e: Exception) {
+                // Handle network or other errors
+                Log.e("PokeInfoViewModel", "Error fetching Pokemon description: ${e.message}")
+                _spanishDescription.value = "Error loading description"
+            }
+        }
+    }
+    fun getPokemonDescriptionFromName(name: String) {
+        viewModelScope.launch {
+            val callDescription = service.getPokemonSpeciesFromName(name)
+            try {
+                val response = callDescription.awaitResponse()
+                if (response.isSuccessful) {
+                    val pokemon = response.body()
+                    val spanishEntries = pokemon?.flavorTextEntries?.filter { it.language.name == "es" }
+                    _spanishDescription.value = spanishEntries?.firstOrNull()?.flavorText ?: "caca"
                 } else {
                     // Handle error
                     Log.e("PokeInfoViewModel", "Error fetching Pokemon description: ${response.errorBody()?.string()}")

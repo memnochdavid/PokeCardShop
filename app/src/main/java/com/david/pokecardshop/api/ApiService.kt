@@ -31,4 +31,9 @@ interface ApiService {
         @Query("limit") limit: Int,
         @Query("offset") offset: Int
     ): Call<AbilityListResponse>
+    @GET("pokemon/{name}")
+    fun getPokemonInfoFromName(@Path("name") name: String): Call<Pokemon>
+    @GET("pokemon-species/{name}")
+    fun getPokemonSpeciesFromName(@Path("name") name: String): Call<Pokemon>
+
 }
