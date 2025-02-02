@@ -35,6 +35,7 @@ import androidx.compose.material3.TextField
 import androidx.compose.material3.TextFieldColors
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.State
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.runtime.mutableStateOf
@@ -88,26 +89,29 @@ fun CreaCarta(modifier: Modifier = Modifier) {
 
     val viewModel = PokeInfoViewModel()
     val pokemon by viewModel.pokemonInfo.observeAsState()
-    val habilidad by viewModel.effect_description
-    val habilidadName by viewModel.effect_name
-    val spanishDescription by viewModel.spanishDescription
+    val habilidad: State<String> = viewModel.effect_description
+    val habilidadName: State<String> = viewModel.effect_name
+    val spanishDescription: State<String> = viewModel.spanishDescription
+    val isDescriptionLoading by viewModel.isDescriptionLoading
+    val isAbilityListLoading by viewModel.isAbilityListLoading
+    val isAbilityDetailsLoading by viewModel.isAbilityDetailsLoading
     var autoSelect by remember { mutableStateOf(false) }
+
     LaunchedEffect(autoSelect) {
         if (autoSelect) {
             viewModel.getPokemonInfo(nameText)
         }
     }
+
     LaunchedEffect(pokemon) {
         pokemon?.let {
             numberText = it.id.toString()
             nameText = it.name.firstMayus()
-            habilidadText = habilidadName
-            descHabilidad = habilidad
-            Log.d("POKEMON_carta", "Pokemon: $it")
             viewModel.getPokemonAbility(it.id)
             viewModel.getPokemonDescription(it.id)
-            descText = spanishDescription
-            Log.d("descText", "descripcion: $spanishDescription")
+//            habilidadText = habilidadName
+//            descHabilidad = habilidad
+            Log.d("POKEMON_carta", "Pokemon: $it")
         }
     }
 
@@ -123,14 +127,17 @@ fun CreaCarta(modifier: Modifier = Modifier) {
             FormularioCarta(
                 numberText = numberText,
                 nameText = nameText,
-                descText = descText,
-                habilidadText = habilidadText,
-                descHabilidad = descHabilidad,
+                descText = spanishDescription.value, // Correctly access the value here
+                habilidadText = habilidadName.value,
+                descHabilidad = habilidad.value,
                 onNumberChange = { numberText = it },
                 onNameChange = { nameText = it },
-                onDescChange = { descText = it },
                 onHabilidadChange = { habilidadText = it },
-                onDescHabilidadChange = { descHabilidad = it }
+                onDescHabilidadChange = { descHabilidad = it },
+                onDescChange = { descText = it },
+                isLoadingDesc = isDescriptionLoading,
+                isLoadingAbility = isAbilityListLoading,
+                isAbilityNameLoading = isAbilityDetailsLoading
             )
         }
         item {
@@ -144,10 +151,13 @@ fun CreaCarta(modifier: Modifier = Modifier) {
                 Carta(
                     numberText = numberText,
                     nameText = nameText,
-                    descText = descText,
+                    descText = spanishDescription.value, // Correctly access the value here
                     selectedImageUri = selectedImageUri,
-                    habilidadText = habilidadText,
-                    descHabilidad = descHabilidad
+                    habilidadText = habilidadName.value,
+                    descHabilidad = habilidad.value,
+                    isLoadingDesc = isDescriptionLoading,
+                    isLoadingAbility = isAbilityListLoading,
+                    isAbilityNameLoading = isAbilityDetailsLoading
                 )
             }
         }
@@ -184,49 +194,57 @@ fun FormularioCarta(
     descHabilidad: String,
     onNumberChange: (String) -> Unit,
     onNameChange: (String) -> Unit,
-    onDescChange: (String) -> Unit,
     onHabilidadChange: (String) -> Unit,
-    onDescHabilidadChange: (String) -> Unit
+    onDescHabilidadChange: (String) -> Unit,
+    onDescChange: (String) -> Unit,
+    isLoadingDesc: Boolean,
+    isLoadingAbility: Boolean,
+    isAbilityNameLoading: Boolean
 ) {
     Column(
         modifier = Modifier
             .fillMaxWidth()
             .padding(16.dp)
     ) {
-        OutlinedTextField(
-            value = numberText,
-            onValueChange = onNumberChange,
-            label = { Text("Número") },
-            modifier = Modifier.fillMaxWidth()
-        )
-        Spacer(modifier = Modifier.height(8.dp))
-        OutlinedTextField(
-            value = nameText,
-            onValueChange = onNameChange,
-            label = { Text("Nombre") },
-            modifier = Modifier.fillMaxWidth()
-        )
-        Spacer(modifier = Modifier.height(8.dp))
-        OutlinedTextField(
-            value = descText,
-            onValueChange = onDescChange,
-            label = { Text("Descripción") },
-            modifier = Modifier.fillMaxWidth()
-        )
-        Spacer(modifier = Modifier.height(8.dp))
-        OutlinedTextField(
-            value = habilidadText,
-            onValueChange = onHabilidadChange,
-            label = { Text("Habilidad") },
-            modifier = Modifier.fillMaxWidth()
-        )
-        Spacer(modifier = Modifier.height(8.dp))
-        OutlinedTextField(
-            value = descHabilidad,
-            onValueChange = onDescHabilidadChange,
-            label = { Text("Descripción de la Habilidad") },
-            modifier = Modifier.fillMaxWidth()
-        )
+        if (isLoadingDesc || isLoadingAbility || isAbilityNameLoading) {
+            Text(text = "Loading description...", color = Color.White)
+        } else {
+
+            OutlinedTextField(
+                value = numberText,
+                onValueChange = onNumberChange,
+                label = { Text("Número") },
+                modifier = Modifier.fillMaxWidth()
+            )
+            Spacer(modifier = Modifier.height(8.dp))
+            OutlinedTextField(
+                value = nameText,
+                onValueChange = onNameChange,
+                label = { Text("Nombre") },
+                modifier = Modifier.fillMaxWidth()
+            )
+            Spacer(modifier = Modifier.height(8.dp))
+            OutlinedTextField(
+                value = descText,
+                onValueChange = onDescChange,
+                label = { Text("Descripción") },
+                modifier = Modifier.fillMaxWidth()
+            )
+            Spacer(modifier = Modifier.height(8.dp))
+            OutlinedTextField(
+                value = habilidadText,
+                onValueChange = onHabilidadChange,
+                label = { Text("Habilidad") },
+                modifier = Modifier.fillMaxWidth()
+            )
+            Spacer(modifier = Modifier.height(8.dp))
+            OutlinedTextField(
+                value = descHabilidad,
+                onValueChange = onDescHabilidadChange,
+                label = { Text("Descripción de la Habilidad") },
+                modifier = Modifier.fillMaxWidth()
+            )
+        }
     }
 }
 
@@ -239,6 +257,9 @@ fun Carta(
     selectedImageUri: Uri?,
     habilidadText: String,
     descHabilidad: String,
+    isLoadingDesc: Boolean,
+    isLoadingAbility: Boolean,
+    isAbilityNameLoading: Boolean
 ){
     val backgroundCard = painterResource(R.drawable.background_dark)
     val backgroundImage = painterResource(R.drawable.background_foto)
@@ -250,130 +271,135 @@ fun Carta(
         shape = RoundedCornerShape(15.dp),
         elevation = CardDefaults.cardElevation(defaultElevation = 20.dp),
     ){
-        Box(
-            modifier = Modifier
-                .wrapContentSize()
-                .background(Color.Transparent)
-        ) {
-            Image(
-                painter = backgroundCard,
-                contentDescription = "Background Image",
-                modifier = Modifier.matchParentSize(),
-                contentScale = ContentScale.Crop
-            )
-            ConstraintLayout(
+        if (isLoadingDesc || isLoadingAbility || isAbilityNameLoading) {
+            Text(text = "Loading description...", color = Color.White)
+        } else {
+            Box(
                 modifier = Modifier
                     .wrapContentSize()
-                    .padding(25.dp)
+                    .background(Color.Transparent)
             ) {
-                val (desc, foto, datos,fondo_tipo, habilidad_poke) = createRefs()
-                Row(
-                    modifier = Modifier
-                        .zIndex(5f)
-                        .fillMaxWidth()
-                        .constrainAs(datos) {
-                            top.linkTo(parent.top)
-                            start.linkTo(parent.start)
-                            end.linkTo(parent.end)
-                            bottom.linkTo(foto.top)
-                        },
-                    horizontalArrangement = Arrangement.SpaceBetween,
-                    verticalAlignment = Alignment.CenterVertically
-                ){
-                    Text(
-                        fontWeight = FontWeight.Bold,
-                        text = numberText,
-                        color = Color.White,
-                        fontSize = 20.sp)
-
-                    Text(
-                        fontWeight = FontWeight.Bold,
-                        text = nameText,
-                        color = Color.White,
-                        fontSize = 20.sp)
-                }
                 Image(
-                    painter = backgroundImage,
+                    painter = backgroundCard,
                     contentDescription = "Background Image",
-                    modifier = Modifier
-                        .size(250.dp)
-                        .border(8.dp, color_electrico_dark, RectangleShape)
-                        .constrainAs(fondo_tipo) {
-                            top.linkTo(foto.top)
-                            start.linkTo(foto.start)
-                            end.linkTo(foto.end)
-                            bottom.linkTo(foto.bottom)
-                        },
-                    contentScale = ContentScale.Crop,
+                    modifier = Modifier.matchParentSize(),
+                    contentScale = ContentScale.Crop
                 )
-
-                Image(
-                    painter = imagen_poke,
-                    contentDescription = "Pokemon",
+                ConstraintLayout(
                     modifier = Modifier
-                        .size(300.dp)
-                        .fillMaxSize()
-                        .constrainAs(foto) {
-                            top.linkTo(datos.bottom)
-                            start.linkTo(parent.start)
-                            end.linkTo(parent.end)
-                            //bottom.linkTo(datos.top)
-                        }
-                )
-
-                Row(modifier = Modifier
-                    .zIndex(5f)
-                    .padding(top = 3.dp)
-                    .constrainAs(desc) {
-                        top.linkTo(foto.bottom)
-                        start.linkTo(parent.start)
-                        end.linkTo(parent.end)
-                        bottom.linkTo(habilidad_poke.top)
-                    }
-                ){
-                    Text(
-                        text = descText,
-                        fontSize = 10.sp,
-                        color = Color.White,
+                        .wrapContentSize()
+                        .padding(25.dp)
+                ) {
+                    val (desc, foto, datos,fondo_tipo, habilidad_poke) = createRefs()
+                    Row(
                         modifier = Modifier
-                            .wrapContentSize()
-                            .padding(horizontal = 10.dp)
+                            .zIndex(5f)
+                            .fillMaxWidth()
+                            .constrainAs(datos) {
+                                top.linkTo(parent.top)
+                                start.linkTo(parent.start)
+                                end.linkTo(parent.end)
+                                bottom.linkTo(foto.top)
+                            },
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically
+                    ){
+                        Text(
+                            fontWeight = FontWeight.Bold,
+                            text = numberText,
+                            color = Color.White,
+                            fontSize = 20.sp)
 
+                        Text(
+                            fontWeight = FontWeight.Bold,
+                            text = nameText,
+                            color = Color.White,
+                            fontSize = 20.sp)
+                    }
+                    Image(
+                        painter = backgroundImage,
+                        contentDescription = "Background Image",
+                        modifier = Modifier
+                            .size(250.dp)
+                            .border(8.dp, color_electrico_dark, RectangleShape)
+                            .constrainAs(fondo_tipo) {
+                                top.linkTo(foto.top)
+                                start.linkTo(foto.start)
+                                end.linkTo(foto.end)
+                                bottom.linkTo(foto.bottom)
+                            },
+                        contentScale = ContentScale.Crop,
                     )
 
-                }
-                Row(
-                    modifier = Modifier
+                    Image(
+                        painter = imagen_poke,
+                        contentDescription = "Pokemon",
+                        modifier = Modifier
+                            .size(300.dp)
+                            .fillMaxSize()
+                            .constrainAs(foto) {
+                                top.linkTo(datos.bottom)
+                                start.linkTo(parent.start)
+                                end.linkTo(parent.end)
+                                //bottom.linkTo(datos.top)
+                            }
+                    )
+
+                    Row(modifier = Modifier
                         .zIndex(5f)
                         .padding(top = 3.dp)
-                        .constrainAs(habilidad_poke) {
-                            top.linkTo(desc.bottom)
+                        .constrainAs(desc) {
+                            top.linkTo(foto.bottom)
                             start.linkTo(parent.start)
                             end.linkTo(parent.end)
-                            bottom.linkTo(parent.bottom)
+                            bottom.linkTo(habilidad_poke.top)
                         }
-                ){
-                    Text(
-                        text = habilidadText,
-                        fontSize = 10.sp,
-                        fontWeight = FontWeight.Bold,
-                        color = Color.White,
-                        modifier = Modifier
-                            .wrapContentSize()
-                            .padding(horizontal = 10.dp)
-                    )
-                    Text(
-                        text = descHabilidad,
-                        fontSize = 10.sp,
-                        color = Color.White,
-                        modifier = Modifier
-                            .wrapContentSize()
-                            .padding(horizontal = 10.dp)
-                    )
-                }
-            }
+                    ){
+                        Text(
+                            text = descText,
+                            fontSize = 10.sp,
+                            color = Color.White,
+                            modifier = Modifier
+                                .wrapContentSize()
+                                .padding(horizontal = 10.dp)
 
+                        )
+
+                    }
+                    Row(
+                        modifier = Modifier
+                            .zIndex(5f)
+                            .padding(top = 3.dp)
+                            .constrainAs(habilidad_poke) {
+                                top.linkTo(desc.bottom)
+                                start.linkTo(parent.start)
+                                end.linkTo(parent.end)
+                                bottom.linkTo(parent.bottom)
+                            }
+                    ){
+                        Text(
+                            text = habilidadText,
+                            fontSize = 10.sp,
+                            fontWeight = FontWeight.Bold,
+                            color = Color.White,
+                            modifier = Modifier
+                                .wrapContentSize()
+                                .padding(horizontal = 10.dp)
+                        )
+                        Text(
+                            text = descHabilidad,
+                            fontSize = 10.sp,
+                            color = Color.White,
+                            modifier = Modifier
+                                .wrapContentSize()
+                                .padding(horizontal = 10.dp)
+                        )
+                    }
+                }
+
+            }
         }
+
 
     }
 }

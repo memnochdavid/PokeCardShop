@@ -35,5 +35,4 @@ interface ApiService {
     fun getPokemonInfoFromName(@Path("name") name: String): Call<Pokemon>
     @GET("pokemon-species/{name}")
     fun getPokemonSpeciesFromName(@Path("name") name: String): Call<Pokemon>
-
 }

@@ -261,6 +261,8 @@ class PokeInfoViewModel() : ViewModel() {
 
     private val _spanishDescription = mutableStateOf("")
     val spanishDescription: State<String> = _spanishDescription
+    private val _isDescriptionLoading = mutableStateOf(false) // New loading state
+    val isDescriptionLoading: State<Boolean> = _isDescriptionLoading
 
     private val _pokemonColor = mutableStateOf("")
     val pokemonColor: State<String> = _pokemonColor
@@ -276,8 +278,14 @@ class PokeInfoViewModel() : ViewModel() {
 
     private val _effect_description = mutableStateOf("")
     val effect_description: State<String> = _effect_description
+    private val _isAbilityListLoading = mutableStateOf(false) // Loading state for getPokemonAbility
+    val isAbilityListLoading: State<Boolean> = _isAbilityListLoading
+
     private val _effect_name = mutableStateOf("")
     val effect_name: State<String> = _effect_name
+    private val _isAbilityDetailsLoading = mutableStateOf(false) // Loading state for getAbilityDetails
+    val isAbilityDetailsLoading: State<Boolean> = _isAbilityDetailsLoading
+
 
     fun getPokemonInfo(name: String){
         val call = service.getPokemonInfoFromName(name)
@@ -294,14 +302,15 @@ class PokeInfoViewModel() : ViewModel() {
 
     }
     fun getPokemonDescription(id: Int) {
+        _isDescriptionLoading.value = true // Start loading
         viewModelScope.launch {
             val callDescription = service.getPokemonSpecies(id)
             try {
                 val response = callDescription.awaitResponse()
                 if (response.isSuccessful) {
-                    val pokemon = response.body()
-                    val spanishEntries = pokemon?.flavorTextEntries?.filter { it.language.name == "es" }
-                    _spanishDescription.value = spanishEntries?.firstOrNull()?.flavorText ?: "caca"
+                    val pokemonSpecies = response.body()
+                    val spanishEntries = pokemonSpecies?.flavorTextEntries?.filter { it.language.name == "es" }
+                    _spanishDescription.value = spanishEntries?.firstOrNull()?.flavorText ?: "No description available"
                 } else {
                     // Handle error
                     Log.e("PokeInfoViewModel", "Error fetching Pokemon description: ${response.errorBody()?.string()}")
@@ -311,6 +320,8 @@ class PokeInfoViewModel() : ViewModel() {
                 // Handle network or other errors
                 Log.e("PokeInfoViewModel", "Error fetching Pokemon description: ${e.message}")
                 _spanishDescription.value = "Error loading description"
+            } finally {
+                _isDescriptionLoading.value = false // Stop loading, regardless of success or failure
             }
         }
     }
@@ -336,6 +347,7 @@ class PokeInfoViewModel() : ViewModel() {
         }
     }
     fun getAbilityDetails(abilityId: Int) {
+        _isAbilityDetailsLoading.value = true // Start loading ability details
         viewModelScope.launch {
             val callDescription = service.getPokemonAbility(abilityId)
             try {
@@ -375,11 +387,14 @@ class PokeInfoViewModel() : ViewModel() {
             } catch (e: Exception) {
                 Log.e("PokeInfoViewModel", "Error fetching ability details: ${e.message}")
                 _effect_description.value = "Error loading description"
+            } finally {
+                _isAbilityDetailsLoading.value = false // Stop loading, regardless of success or failure
             }
         }
     }
 
     fun getPokemonAbility(pokemonId: Int) {
+        _isAbilityListLoading.value = true // Start loading abilities
         viewModelScope.launch {
             try {
                 var offset = 0
@@ -439,6 +454,8 @@ class PokeInfoViewModel() : ViewModel() {
             } catch (e: Exception) {
                 Log.e("PokeInfoViewModel", "Error fetching ability list: ${e.message}")
                 _effect_description.value = "Error loading description"
+            } finally {
+                _isAbilityListLoading.value = false // Stop loading, regardless of success or failure
             }
         }
     }
