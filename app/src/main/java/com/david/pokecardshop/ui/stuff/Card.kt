@@ -87,6 +87,7 @@ import com.david.pokecardshop.dataclass.TypeToColor
 import com.david.pokecardshop.dataclass.TypeToDrawableAPI
 import com.david.pokecardshop.dataclass.adaptaDescripcion
 import com.david.pokecardshop.dataclass.adaptaNombre
+import com.david.pokecardshop.dataclass.caraImagenURL
 import com.david.pokecardshop.dataclass.firstMayus
 import com.david.pokecardshop.ui.theme.*
 import kotlin.math.PI
@@ -393,7 +394,7 @@ fun CardGrande(pokemon: Pokemon) {
     val nombrePokeLimpio=adaptaNombre(pokemon.name)
 
     val imagen_poke = rememberAsyncImagePainter(
-        model = "https://cloud.appwrite.io/v1/storage/buckets/677bc72c000eb680c80b/files/${adaptaNombre(pokemon.name)}/view?project=6738854a0011e2bc643f&mode=admin",
+        model = caraImagenURL(pokemon.name),
         contentScale = ContentScale.FillBounds,
     )
 

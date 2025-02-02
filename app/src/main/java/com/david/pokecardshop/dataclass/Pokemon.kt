@@ -763,3 +763,8 @@ fun String.extractAbilityId(): Int? {
     val matchResult = regex.find(this)
     return matchResult?.groupValues?.get(1)?.toIntOrNull()
 }
+
+fun caraImagenURL(nombre:String):String{
+    val url = "https://cloud.appwrite.io/v1/storage/buckets/677bc72c000eb680c80b/files/${adaptaNombre(nombre)}/view?project=6738854a0011e2bc643f&mode=admin"
+    return url
+}

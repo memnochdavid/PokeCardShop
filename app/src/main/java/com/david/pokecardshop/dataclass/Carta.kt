@@ -1,7 +1,10 @@
 package com.david.pokecardshop.dataclass
 
+import android.annotation.SuppressLint
+import android.content.Context
 import android.net.Uri
 import android.util.Log
+import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -40,6 +43,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -59,11 +63,17 @@ import androidx.compose.ui.unit.toSize
 import androidx.compose.ui.zIndex
 import androidx.constraintlayout.compose.ConstraintLayout
 import androidx.lifecycle.viewmodel.compose.viewModel
+import coil.compose.rememberAsyncImagePainter
 import com.david.pokecardshop.R
+import com.david.pokecardshop.refBBDD
 import com.david.pokecardshop.ui.stuff.Boton
 import com.david.pokecardshop.ui.stuff.CardGrandeDorso
 import com.david.pokecardshop.ui.theme.blanco80
 import com.david.pokecardshop.ui.theme.*
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
 data class Carta(
     var number: String="",
@@ -79,13 +89,15 @@ data class Carta(
 @Composable
 fun CreaCarta(modifier: Modifier = Modifier) {
     val context = LocalContext.current
+    val scopeUser = rememberCoroutineScope()
     var numberText by remember { mutableStateOf("#000") }
     var nameText by remember { mutableStateOf("Nombre del Pokémon") }
     var descText by remember { mutableStateOf("Aquí la descripción del Pokémon") }
     var selectedImageUri by remember { mutableStateOf<Uri?>(null) }
     var habilidadText by remember { mutableStateOf("Habilidad") }
     var descHabilidad by remember { mutableStateOf("Descripción de la Habilidad") }
-    var tipo by remember { mutableStateOf(Type(slot=1, type=TypeInfo(name="fire", url="https://pokeapi.co/api/v2/type/10/")))}
+    var tipo by remember { mutableStateOf(Type(slot=1, type=TypeInfo(name="electric", url="https://pokeapi.co/api/v2/type/13/")))}
+//    var color_fondo by remember { mutableStateOf(TypeToColor(tipo,1))}
 
     val viewModel = PokeInfoViewModel()
     val pokemon by viewModel.pokemonInfo.observeAsState()
@@ -109,9 +121,8 @@ fun CreaCarta(modifier: Modifier = Modifier) {
             nameText = it.name.firstMayus()
             viewModel.getPokemonAbility(it.id)
             viewModel.getPokemonDescription(it.id)
-//            habilidadText = habilidadName
-//            descHabilidad = habilidad
-            Log.d("POKEMON_carta", "Pokemon: $it")
+            tipo = it.types[0]
+            selectedImageUri = Uri.parse(it.sprites.frontDefault)
         }
     }
 
@@ -155,6 +166,7 @@ fun CreaCarta(modifier: Modifier = Modifier) {
                     selectedImageUri = selectedImageUri,
                     habilidadText = habilidadName.value,
                     descHabilidad = habilidad.value,
+                    tipo = tipo,
                     isLoadingDesc = isDescriptionLoading,
                     isLoadingAbility = isAbilityListLoading,
                     isAbilityNameLoading = isAbilityDetailsLoading
@@ -171,6 +183,21 @@ fun CreaCarta(modifier: Modifier = Modifier) {
                     text = "Auto",
                     onClick = {
                         autoSelect = !autoSelect
+                    }
+                )
+                Boton(
+                    text = "Guardar",
+                    onClick = {
+                        val carta_creada = Carta(
+                            number = numberText,
+                            nombre = nameText,
+                            descripcion = spanishDescription.value,
+                            imagen = caraImagenURL(nameText),
+                            habilidad_poke = listOf(habilidadName.value, habilidad.value),
+                            fondo_foto = R.drawable.background_foto,
+                            fondo_carta = TypeToBackground(tipo)
+                        )
+                        guardaCartaFB(carta_creada, context, scopeUser)
                     }
                 )
                 Boton(
@@ -207,7 +234,13 @@ fun FormularioCarta(
             .padding(16.dp)
     ) {
         if (isLoadingDesc || isLoadingAbility || isAbilityNameLoading) {
-            Text(text = "Loading description...", color = Color.White)
+            Row(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .background(Color.Transparent),
+            ){
+                Text(text = "CARGANDO CONTENIDO...", color = Color.White)
+            }
         } else {
 
             OutlinedTextField(
@@ -257,13 +290,20 @@ fun Carta(
     selectedImageUri: Uri?,
     habilidadText: String,
     descHabilidad: String,
+    tipo: Type,
     isLoadingDesc: Boolean,
     isLoadingAbility: Boolean,
     isAbilityNameLoading: Boolean
 ){
-    val backgroundCard = painterResource(R.drawable.background_dark)
+    val backgroundCard = painterResource(TypeToBackground(tipo))
     val backgroundImage = painterResource(R.drawable.background_foto)
-    val imagen_poke = painterResource(R.drawable.silueta)
+    var imagen_poke = painterResource(R.drawable.silueta)
+
+    if (selectedImageUri != null) {
+        imagen_poke = rememberAsyncImagePainter(caraImagenURL(nameText))
+    }
+
+
     Card(
         modifier = Modifier
             .fillMaxWidth()
@@ -403,83 +443,29 @@ fun Carta(
 
     }
 }
-/*
-@OptIn(ExperimentalMaterial3Api::class)
-@Composable
-fun SeleccionaTipo(
-    modifier: Modifier = Modifier,
-    tipo: Type,
-    onTipoChange: (Type) -> Unit,
-) {
-    var selectedTipo by remember { mutableStateOf(tipo) }
-    var expanded by remember { mutableStateOf(false) }
 
-    val coloresSpinner: TextFieldColors = ExposedDropdownMenuDefaults.textFieldColors(
-        focusedTextColor = negro80,
-        unfocusedTextColor = negro80,
-        focusedContainerColor = TypeToColor(tipo, 1),
-        unfocusedContainerColor = TypeToColor(tipo, 1),
-        focusedIndicatorColor = md_theme_dark_surfaceTint,
-        unfocusedIndicatorColor = md_theme_dark_surfaceTint,
-        focusedTrailingIconColor = negro80,
-        unfocusedTrailingIconColor = negro80,
-    )
-    val viewModel: PokeInfoViewModel = viewModel()
-    val lista_tipos: List<TypeInfo> by viewModel.pokemonTypeList.observeAsState(initial = emptyList())
-    viewModel.getTypeList()
 
-    ExposedDropdownMenuBox(
-        expanded = expanded,
-        onExpandedChange = { expanded = !expanded },
-        modifier = modifier
-    ) {
-        TextField(
-            value = selectedTipo,
-            onValueChange = {
-                onTipoChange(it)
-            },
-            readOnly = true,
-            trailingIcon = {
-                ExposedDropdownMenuDefaults.TrailingIcon(
-                    expanded = expanded,
-                    modifier = Modifier.graphicsLayer { compositingStrategy =
-                        CompositingStrategy.Offscreen }
-                )
-            },
-            modifier = Modifier
-                .menuAnchor()
-                .wrapContentWidth(),
-            colors = coloresSpinner,
-            )
-        ExposedDropdownMenu(
-            expanded = expanded,
-            onDismissRequest = { expanded = false },
-            modifier = Modifier
-                .background(TypeToColor(tipo, 1)),
-        ) {
-            lista_tipos.forEach { tipo ->
-                DropdownMenuItem(
-                    text = {
-                        Text(
-                            text = selectedTipo.type.name,
-                            color = negro80
-                        )
-                    },
-                    onClick = {
-                        selectedTipo = tipo.name
-                        expanded = false
-                        onTipoChange(tipo)
-                    },
-                    modifier = Modifier
-                        .padding(vertical = 0.dp)
-                        .background(TypeToColor(tipo, 1))
-                )
-            }
+fun guardaCartaFB(
+    carta: Carta,
+    context: Context,
+    scopeUser: CoroutineScope,
+
+){
+    val identificador = refBBDD.child("tienda").child("cartas").push().key!!
+
+    scopeUser.launch {
+        try{
+            refBBDD.child("tienda").child("cartas").child(identificador).setValue(carta)
+
+        }catch (e: Exception){
+            Log.e("UserError", "Error al guardar la carta : ${e.message}")
+            Toast.makeText(context, "Error al guardar la carta : ${e.message}", Toast.LENGTH_SHORT).show()
+        }
+        finally {
+            Toast.makeText(context, "Carta ${carta.nombre} guardada con éxito", Toast.LENGTH_SHORT).show()
         }
     }
 }
-
-*/
 
 
 @Preview(showBackground = true, widthDp = 360, heightDp = 720)
