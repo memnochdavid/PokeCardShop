@@ -78,14 +78,12 @@ fun CartaFB(modifier: Modifier = Modifier, carta: Carta) {
     val habilidadText = carta.habilidad_poke[0]
     val descHabilidad = carta.habilidad_poke[1]
 
-    val backgroundCard = painterResource(carta.fondo_foto)
-    val backgroundImage = painterResource(carta.fondo_carta)
+    val backgroundImage = painterResource(carta.fondo_foto)
+    val backgroundCard = painterResource(carta.fondo_carta)
     var imagen_poke = rememberAsyncImagePainter(carta.imagen)
 
     Card(
-        modifier = Modifier
-            .fillMaxWidth()
-            .wrapContentHeight(),
+        modifier = modifier,
         shape = RoundedCornerShape(15.dp),
         elevation = CardDefaults.cardElevation(defaultElevation = 20.dp),
     ){
@@ -319,8 +317,10 @@ fun CarPequeFB(carta: Carta, onClick: () -> Unit){
 
 @Composable
 fun CartasCreadas(modifier: Modifier = Modifier){
-    var onCardClick by remember { mutableStateOf(false) }
+    var onCardClick by remember { mutableStateOf(Carta()) }
+    var cartaGrande by remember { mutableStateOf(false) }
     var isLoading by remember { mutableStateOf(true) }
+
     cargaCartasCreadas(onUpdateIsLoading = { isLoading = it })
     if (isLoading) { //se asegura de haber cargado los datos de la nube antes de empezar a mostrar nada
         Box(
@@ -350,9 +350,18 @@ fun CartasCreadas(modifier: Modifier = Modifier){
             ) {
                 items(cartasCreadas) { carta ->
                     CarPequeFB(carta = carta, onClick = {
-
+                        cartaGrande = !cartaGrande
+                        onCardClick = carta
                     })
                 }
+            }
+            if (cartaGrande) {
+                CartaFB(
+                    modifier = Modifier
+                        .fillMaxSize(0.75f)
+                        .wrapContentHeight(),
+                    carta = onCardClick
+                )
             }
         }
     }
