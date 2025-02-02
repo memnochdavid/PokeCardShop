@@ -84,7 +84,7 @@ data class Carta(
     var habilidad_poke: List<String> = listOf(""),
     var fondo_foto: Int=0,
     var fondo_carta: Int=0,
-    var tipo: Type? = null
+    var tipo: String = ""
 )
 
 
@@ -198,7 +198,7 @@ fun CreaCarta(modifier: Modifier = Modifier) {
                             habilidad_poke = listOf(habilidadName.value, habilidad.value),
                             fondo_foto = R.drawable.background_foto,
                             fondo_carta = TypeToBackground(tipo),
-                            tipo = tipo,
+                            tipo = tipo.type.name,
                             imagenAPI = selectedImageUri.toString()
 
                         )

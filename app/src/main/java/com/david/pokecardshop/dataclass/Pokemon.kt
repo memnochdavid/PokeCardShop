@@ -691,6 +691,29 @@ fun TypeToColor(tipo:Type, opc:Int):Color{
         }
     }
 }
+fun TypeStringToColor(tipo:String):Color{
+    return when (tipo) {
+        "grass" -> color_planta_light
+        "water" -> color_agua_light
+        "fire" -> color_fuego_light
+        "fighting" -> color_lucha_light
+        "poison" -> color_veneno_light
+        "steel" -> color_acero_light
+        "bug" -> color_bicho_light
+        "dragon" -> color_dragon_light
+        "electric" -> color_electrico_light
+        "fairy" -> color_hada_light
+        "ice" -> color_hielo_light
+        "psychic" -> color_psiquico_light
+        "rock" -> color_roca_light
+        "ground" -> color_tierra_light
+        "dark" -> color_siniestro_light
+        "normal" -> color_normal_light
+        "flying" -> color_volador_light
+        "ghost" -> color_fantasma_light
+        else -> { negro80}
+    }
+}
 
 fun ColorStringToColorType(string_color:String):Color{
     return when (string_color) {

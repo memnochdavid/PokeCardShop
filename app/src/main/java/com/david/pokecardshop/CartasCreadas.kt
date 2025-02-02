@@ -57,6 +57,7 @@ import com.david.pokecardshop.dataclass.Carta
 import com.david.pokecardshop.dataclass.CreaCarta
 import com.david.pokecardshop.dataclass.PokeInfoViewModel
 import com.david.pokecardshop.dataclass.Pokemon
+import com.david.pokecardshop.dataclass.TypeStringToColor
 import com.david.pokecardshop.dataclass.TypeToBackground
 import com.david.pokecardshop.dataclass.TypeToColor
 import com.david.pokecardshop.dataclass.TypeToDrawableAPI
@@ -228,7 +229,7 @@ fun CarPequeFB(carta: Carta, onClick: () -> Unit){
             stiffness = Spring.StiffnessMedium // Moderate stiffness
         )
     )
-    val color_tipo = carta.tipo?.let { TypeToColor(it, 1) }
+    val color_tipo = TypeStringToColor(carta.tipo)
     Card(
         modifier = Modifier
             .wrapContentSize()
