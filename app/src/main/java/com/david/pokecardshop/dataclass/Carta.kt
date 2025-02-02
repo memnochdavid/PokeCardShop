@@ -80,9 +80,11 @@ data class Carta(
     var nombre: String="",
     var descripcion: String="",
     var imagen: String="",
+    var imagenAPI:String="",
     var habilidad_poke: List<String> = listOf(""),
     var fondo_foto: Int=0,
-    var fondo_carta: Int=0
+    var fondo_carta: Int=0,
+    var tipo: Type? = null
 )
 
 
@@ -195,7 +197,10 @@ fun CreaCarta(modifier: Modifier = Modifier) {
                             imagen = caraImagenURL(nameText),
                             habilidad_poke = listOf(habilidadName.value, habilidad.value),
                             fondo_foto = R.drawable.background_foto,
-                            fondo_carta = TypeToBackground(tipo)
+                            fondo_carta = TypeToBackground(tipo),
+                            tipo = tipo,
+                            imagenAPI = selectedImageUri.toString()
+
                         )
                         guardaCartaFB(carta_creada, context, scopeUser)
                     }

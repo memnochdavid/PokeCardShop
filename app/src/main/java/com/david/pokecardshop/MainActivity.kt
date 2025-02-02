@@ -83,7 +83,8 @@ fun MainScreen() {
     val currentRoute = when (selectedItem) {
         0 -> Screen.Lista.route
         1 -> if (sesion.admin) Screen.CrearCarta.route else Screen.Opciones.route
-        2 -> Screen.Opciones.route
+        2 -> Screen.CartasCreadas.route
+        3 -> Screen.Opciones.route
         else -> Screen.Lista.route // Default to Lista
     }
 
@@ -100,7 +101,8 @@ fun MainScreen() {
                             when (index) {
                                 0 -> Screen.Lista.route
                                 1 -> if (sesion.admin) Screen.CrearCarta.route else Screen.Opciones.route
-                                2 -> Screen.Opciones.route
+                                2 -> Screen.CartasCreadas.route
+                                3 -> Screen.Opciones.route
                                 else -> Screen.Lista.route
                             }
                         )

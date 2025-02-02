@@ -36,6 +36,7 @@ import androidx.compose.ui.graphics.RectangleShape
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
+import com.david.pokecardshop.CartasCreadas
 import com.david.pokecardshop.VerListaPokeAPI
 import com.david.pokecardshop.dataclass.CreaCarta
 import com.david.pokecardshop.dataclass.FormularioCarta
@@ -58,7 +59,7 @@ fun Menu(
     val items = if (!sesion.admin) {
         listOf("Lista", "Opciones")
     } else {
-        listOf("Lista", "Crear Carta", "Opciones")
+        listOf("Lista", "Crear Carta", "Cartas Creadas", "Opciones")
     }
     val selectedColor = blanco80
     val unselectedColor = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f)
@@ -77,6 +78,7 @@ fun Menu(
                         when (item) {
                             "Lista" -> Icon(Icons.AutoMirrored.Filled.List, contentDescription = item)
                             "Crear Carta" -> Icon(Icons.Filled.Add, contentDescription = item)
+                            "Cartas Creadas" -> Icon(Icons.Filled.Face, contentDescription = item)
                             "Opciones" -> Icon(Icons.Filled.Settings, contentDescription = item)
                             else -> Icon(Icons.AutoMirrored.Filled.List, contentDescription = item)
                         }
@@ -99,6 +101,7 @@ fun Menu(
 sealed class Screen(val route: String) {
     object Lista : Screen("Lista")
     object CrearCarta : Screen("CrearCarta")
+    object CartasCreadas : Screen("CartasCreadas")
     object Opciones : Screen("Opciones")
 }
 @Composable
@@ -131,6 +134,13 @@ fun Navigation(navController: NavHostController, modifier: Modifier) {
             PokeCardShopTheme {
                 Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
                     CreaCarta( modifier = Modifier.padding(innerPadding))
+                }
+            }
+        }
+        composable(Screen.CartasCreadas.route) {
+            PokeCardShopTheme {
+                Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
+                    CartasCreadas(modifier = Modifier.padding(innerPadding))
                 }
             }
         }
