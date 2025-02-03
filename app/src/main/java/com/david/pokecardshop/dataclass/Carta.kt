@@ -93,7 +93,7 @@ fun CreaCarta(modifier: Modifier = Modifier) {
     val context = LocalContext.current
     val scopeUser = rememberCoroutineScope()
     var numberText by remember { mutableStateOf("#000") }
-    var nameText by remember { mutableStateOf("Nombre del Pokémon") }
+    var nameText by remember { mutableStateOf("Nombre") }
     var descText by remember { mutableStateOf("Aquí la descripción del Pokémon") }
     var selectedImageUri by remember { mutableStateOf<Uri?>(null) }
     var habilidadText by remember { mutableStateOf("Habilidad") }
@@ -105,11 +105,13 @@ fun CreaCarta(modifier: Modifier = Modifier) {
     val pokemon by viewModel.pokemonInfo.observeAsState()
     val habilidad: State<String> = viewModel.effect_description
     val habilidadName: State<String> = viewModel.effect_name
-    val spanishDescription: State<String> = viewModel.spanishDescription
+    var spanishDescription: State<String> = viewModel.spanishDescription
     val isDescriptionLoading by viewModel.isDescriptionLoading
     val isAbilityListLoading by viewModel.isAbilityListLoading
     val isAbilityDetailsLoading by viewModel.isAbilityDetailsLoading
     var autoSelect by remember { mutableStateOf(false) }
+
+
 
     LaunchedEffect(autoSelect) {
         if (autoSelect) {
@@ -128,19 +130,16 @@ fun CreaCarta(modifier: Modifier = Modifier) {
         }
     }
 
-
-//    val lista_tipos: List<TypeInfo> by viewModel.pokemonTypeList.observeAsState(initial = emptyList())
-//    viewModel.getTypeList()
     LazyColumn(
         modifier = Modifier
             .fillMaxSize()
-            .background(color_electrico_dark)
+            //.background(color_electrico_dark)
     ) {
         item {
             FormularioCarta(
                 numberText = numberText,
                 nameText = nameText,
-                descText = spanishDescription.value, // Correctly access the value here
+                descText = spanishDescription.value,
                 habilidadText = habilidadName.value,
                 descHabilidad = habilidad.value,
                 onNumberChange = { numberText = it },
@@ -162,9 +161,12 @@ fun CreaCarta(modifier: Modifier = Modifier) {
                 horizontalArrangement = Arrangement.Center,
             ) {
                 Carta(
+                    modifier = Modifier
+                        .fillMaxWidth(0.75f)
+                        .wrapContentHeight(),
                     numberText = numberText,
                     nameText = nameText,
-                    descText = spanishDescription.value, // Correctly access the value here
+                    descText = spanishDescription.value,
                     selectedImageUri = selectedImageUri,
                     habilidadText = habilidadName.value,
                     descHabilidad = habilidad.value,
@@ -216,7 +218,7 @@ fun CreaCarta(modifier: Modifier = Modifier) {
     }
 }
 
-@OptIn(ExperimentalMaterial3Api::class)
+
 @Composable
 fun FormularioCarta(
     numberText: String,
@@ -263,7 +265,7 @@ fun FormularioCarta(
             )
             Spacer(modifier = Modifier.height(8.dp))
             OutlinedTextField(
-                value = descText,
+                value = adaptaDescripcion(descText),
                 onValueChange = onDescChange,
                 label = { Text("Descripción") },
                 modifier = Modifier.fillMaxWidth()
@@ -277,7 +279,7 @@ fun FormularioCarta(
             )
             Spacer(modifier = Modifier.height(8.dp))
             OutlinedTextField(
-                value = descHabilidad,
+                value = adaptaDescripcion(descHabilidad),
                 onValueChange = onDescHabilidadChange,
                 label = { Text("Descripción de la Habilidad") },
                 modifier = Modifier.fillMaxWidth()
@@ -307,12 +309,8 @@ fun Carta(
     if (selectedImageUri != null) {
         imagen_poke = rememberAsyncImagePainter(caraImagenURL(nameText))
     }
-
-
     Card(
-        modifier = Modifier
-            .fillMaxWidth()
-            .wrapContentHeight(),
+        modifier = modifier,
         shape = RoundedCornerShape(15.dp),
         elevation = CardDefaults.cardElevation(defaultElevation = 20.dp),
     ){
@@ -345,17 +343,20 @@ fun Carta(
                                 start.linkTo(parent.start)
                                 end.linkTo(parent.end)
                                 bottom.linkTo(foto.top)
-                            },
+                            }
+                            .background(TypeToColor(tipo,3)),
                         horizontalArrangement = Arrangement.SpaceBetween,
                         verticalAlignment = Alignment.CenterVertically
                     ){
                         Text(
+                            modifier = Modifier.wrapContentWidth(),
                             fontWeight = FontWeight.Bold,
                             text = numberText,
                             color = Color.White,
                             fontSize = 20.sp)
 
                         Text(
+                            modifier = Modifier.wrapContentWidth(),
                             fontWeight = FontWeight.Bold,
                             text = nameText,
                             color = Color.White,
@@ -393,6 +394,7 @@ fun Carta(
                     Row(modifier = Modifier
                         .zIndex(5f)
                         .padding(top = 3.dp)
+                        .background(TypeToColor(tipo,3))
                         .constrainAs(desc) {
                             top.linkTo(foto.bottom)
                             start.linkTo(parent.start)
@@ -401,7 +403,7 @@ fun Carta(
                         }
                     ){
                         Text(
-                            text = descText,
+                            text = adaptaDescripcion(descText),
                             fontSize = 10.sp,
                             color = Color.White,
                             modifier = Modifier
@@ -415,12 +417,15 @@ fun Carta(
                         modifier = Modifier
                             .zIndex(5f)
                             .padding(top = 3.dp)
+                            .background(TypeToColor(tipo,3))
                             .constrainAs(habilidad_poke) {
                                 top.linkTo(desc.bottom)
                                 start.linkTo(parent.start)
                                 end.linkTo(parent.end)
                                 bottom.linkTo(parent.bottom)
-                            }
+                            },
+                        horizontalArrangement = Arrangement.SpaceEvenly,
+                        verticalAlignment = Alignment.CenterVertically
                     ){
                         Text(
                             text = habilidadText,
@@ -432,7 +437,7 @@ fun Carta(
                                 .padding(horizontal = 10.dp)
                         )
                         Text(
-                            text = descHabilidad,
+                            text = adaptaDescripcion(descHabilidad),
                             fontSize = 10.sp,
                             color = Color.White,
                             modifier = Modifier

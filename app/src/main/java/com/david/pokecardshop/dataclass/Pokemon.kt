@@ -667,6 +667,29 @@ fun TypeToColor(tipo:Type, opc:Int):Color{
             else -> { negro80}
         }
     }
+    else if(opc==3){
+        return when (tipo.type.name) {
+            "grass" -> color_planta_transparente
+            "water" -> color_agua_transparente
+            "fire" -> color_fuego_transparente
+            "fighting" -> color_lucha_transparente
+            "poison" -> color_veneno_transparente
+            "steel" -> color_acero_transparente
+            "bug" -> color_bicho_transparente
+            "dragon" -> color_dragon_transparente
+            "electric" -> color_electrico_transparente
+            "fairy" -> color_hada_transparente
+            "ice" -> color_hielo_transparente
+            "psychic" -> color_psiquico_transparente
+            "rock" -> color_roca_transparente
+            "ground" -> color_tierra_transparente
+            "dark" -> color_siniestro_transparente
+            "normal" -> color_normal_transparente
+            "flying" -> color_volador_transparente
+            "ghost" -> color_fantasma_transparente
+            else -> { negro80}
+        }
+    }
     else{
         return when (tipo.type.name) {
             "grass" -> color_planta_dark
@@ -691,27 +714,52 @@ fun TypeToColor(tipo:Type, opc:Int):Color{
         }
     }
 }
-fun TypeStringToColor(tipo:String):Color{
-    return when (tipo) {
-        "grass" -> color_planta_light
-        "water" -> color_agua_light
-        "fire" -> color_fuego_light
-        "fighting" -> color_lucha_light
-        "poison" -> color_veneno_light
-        "steel" -> color_acero_light
-        "bug" -> color_bicho_light
-        "dragon" -> color_dragon_light
-        "electric" -> color_electrico_light
-        "fairy" -> color_hada_light
-        "ice" -> color_hielo_light
-        "psychic" -> color_psiquico_light
-        "rock" -> color_roca_light
-        "ground" -> color_tierra_light
-        "dark" -> color_siniestro_light
-        "normal" -> color_normal_light
-        "flying" -> color_volador_light
-        "ghost" -> color_fantasma_light
-        else -> { negro80}
+fun TypeStringToColor(tipo:String,opc:Int):Color{
+    if(opc==1) {
+        return when (tipo) {
+            "grass" -> color_planta_light
+            "water" -> color_agua_light
+            "fire" -> color_fuego_light
+            "fighting" -> color_lucha_light
+            "poison" -> color_veneno_light
+            "steel" -> color_acero_light
+            "bug" -> color_bicho_light
+            "dragon" -> color_dragon_light
+            "electric" -> color_electrico_light
+            "fairy" -> color_hada_light
+            "ice" -> color_hielo_light
+            "psychic" -> color_psiquico_light
+            "rock" -> color_roca_light
+            "ground" -> color_tierra_light
+            "dark" -> color_siniestro_light
+            "normal" -> color_normal_light
+            "flying" -> color_volador_light
+            "ghost" -> color_fantasma_light
+            else -> { negro80}
+        }
+    }
+    else{
+        return when (tipo) {
+            "grass" -> color_planta_transparente
+            "water" -> color_agua_transparente
+            "fire" -> color_fuego_transparente
+            "fighting" -> color_lucha_transparente
+            "poison" -> color_veneno_transparente
+            "steel" -> color_acero_transparente
+            "bug" -> color_bicho_transparente
+            "dragon" -> color_dragon_transparente
+            "electric" -> color_electrico_transparente
+            "fairy" -> color_hada_transparente
+            "ice" -> color_hielo_transparente
+            "psychic" -> color_psiquico_transparente
+            "rock" -> color_roca_transparente
+            "ground" -> color_tierra_transparente
+            "dark" -> color_siniestro_transparente
+            "normal" -> color_normal_transparente
+            "flying" -> color_volador_transparente
+            "ghost" -> color_fantasma_transparente
+            else -> { negro80}
+        }
     }
 }
 
@@ -777,7 +825,7 @@ fun adaptaNombre(nombre: String): String {
 
 fun adaptaDescripcion(desc: String): String {
     val devuelve = desc
-        .replace("\n","")
+        .replace("\n"," ")
     return devuelve
 }
 

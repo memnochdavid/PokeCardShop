@@ -61,6 +61,7 @@ import com.david.pokecardshop.dataclass.TypeStringToColor
 import com.david.pokecardshop.dataclass.TypeToBackground
 import com.david.pokecardshop.dataclass.TypeToColor
 import com.david.pokecardshop.dataclass.TypeToDrawableAPI
+import com.david.pokecardshop.dataclass.adaptaDescripcion
 import com.david.pokecardshop.dataclass.adaptaNombre
 import com.david.pokecardshop.dataclass.firstMayus
 import com.david.pokecardshop.ui.stuff.CardGrande
@@ -108,6 +109,7 @@ fun CartaFB(modifier: Modifier = Modifier, carta: Carta) {
                     modifier = Modifier
                         .zIndex(5f)
                         .fillMaxWidth()
+                        .background(TypeStringToColor(carta.tipo,2))
                         .constrainAs(datos) {
                             top.linkTo(parent.top)
                             start.linkTo(parent.start)
@@ -161,6 +163,7 @@ fun CartaFB(modifier: Modifier = Modifier, carta: Carta) {
                 Row(modifier = Modifier
                     .zIndex(5f)
                     .padding(top = 3.dp)
+                    .background(TypeStringToColor(carta.tipo,2))
                     .constrainAs(desc) {
                         top.linkTo(foto.bottom)
                         start.linkTo(parent.start)
@@ -169,7 +172,7 @@ fun CartaFB(modifier: Modifier = Modifier, carta: Carta) {
                     }
                 ){
                     Text(
-                        text = descText,
+                        text = adaptaDescripcion(descText),
                         fontSize = 10.sp,
                         color = Color.White,
                         modifier = Modifier
@@ -183,6 +186,7 @@ fun CartaFB(modifier: Modifier = Modifier, carta: Carta) {
                     modifier = Modifier
                         .zIndex(5f)
                         .padding(top = 3.dp)
+                        .background(TypeStringToColor(carta.tipo,2))
                         .constrainAs(habilidad_poke) {
                             top.linkTo(desc.bottom)
                             start.linkTo(parent.start)
@@ -200,7 +204,7 @@ fun CartaFB(modifier: Modifier = Modifier, carta: Carta) {
                             .padding(horizontal = 10.dp)
                     )
                     Text(
-                        text = descHabilidad,
+                        text = adaptaDescripcion(descHabilidad),
                         fontSize = 10.sp,
                         color = Color.White,
                         modifier = Modifier
@@ -227,7 +231,7 @@ fun CarPequeFB(carta: Carta, onClick: () -> Unit){
             stiffness = Spring.StiffnessMedium // Moderate stiffness
         )
     )
-    val color_tipo = TypeStringToColor(carta.tipo)
+    val color_tipo = TypeStringToColor(carta.tipo,1)
     Card(
         modifier = Modifier
             .wrapContentSize()
