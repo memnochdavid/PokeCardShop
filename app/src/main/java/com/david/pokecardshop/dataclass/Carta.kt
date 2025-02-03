@@ -70,8 +70,10 @@ import com.david.pokecardshop.ui.stuff.Boton
 import com.david.pokecardshop.ui.stuff.CardGrandeDorso
 import com.david.pokecardshop.ui.theme.blanco80
 import com.david.pokecardshop.ui.theme.*
+import com.google.android.gms.tasks.Tasks.await
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
@@ -116,17 +118,26 @@ fun CreaCarta(modifier: Modifier = Modifier) {
     LaunchedEffect(autoSelect) {
         if (autoSelect) {
             viewModel.getPokemonInfo(nameText)
+
         }
     }
 
     LaunchedEffect(pokemon) {
         pokemon?.let {
-            numberText = it.id.toString()
-            nameText = it.name.firstMayus()
-            viewModel.getPokemonAbility(it.id)
-            viewModel.getPokemonDescription(it.id)
-            tipo = it.types[0]
-            selectedImageUri = Uri.parse(it.sprites.frontDefault)
+            scopeUser.launch {
+                numberText = it.id.toString()
+                nameText = it.name.firstMayus()
+                viewModel.getPokemonAbility(it.id)
+                viewModel.getPokemonDescription(it.id)
+                delay(1000)
+                descText = spanishDescription.value
+                habilidadText = habilidadName.value
+                Log.d("NOMHabilidad", habilidad.value)
+                descHabilidad = habilidad.value
+                Log.d("DESCHabilidad", descHabilidad)
+                tipo = it.types[0]
+                selectedImageUri = Uri.parse(it.sprites.frontDefault)
+            }
         }
     }
 
@@ -139,9 +150,9 @@ fun CreaCarta(modifier: Modifier = Modifier) {
             FormularioCarta(
                 numberText = numberText,
                 nameText = nameText,
-                descText = spanishDescription.value,
-                habilidadText = habilidadName.value,
-                descHabilidad = habilidad.value,
+                descText = descText,
+                habilidadText = habilidadText,
+                descHabilidad = descHabilidad,
                 onNumberChange = { numberText = it },
                 onNameChange = { nameText = it },
                 onHabilidadChange = { habilidadText = it },
@@ -166,10 +177,10 @@ fun CreaCarta(modifier: Modifier = Modifier) {
                         .wrapContentHeight(),
                     numberText = numberText,
                     nameText = nameText,
-                    descText = spanishDescription.value,
+                    descText = descText,
                     selectedImageUri = selectedImageUri,
-                    habilidadText = habilidadName.value,
-                    descHabilidad = habilidad.value,
+                    habilidadText = habilidadText,
+                    descHabilidad = descHabilidad,
                     tipo = tipo,
                     isLoadingDesc = isDescriptionLoading,
                     isLoadingAbility = isAbilityListLoading,
@@ -195,9 +206,9 @@ fun CreaCarta(modifier: Modifier = Modifier) {
                         val carta_creada = Carta(
                             number = numberText,
                             nombre = nameText,
-                            descripcion = spanishDescription.value,
+                            descripcion = descText,
                             imagen = caraImagenURL(nameText),
-                            habilidad_poke = listOf(habilidadName.value, habilidad.value),
+                            habilidad_poke = listOf(habilidadText, descHabilidad),
                             fondo_foto = R.drawable.background_foto,
                             fondo_carta = TypeToBackground(tipo),
                             tipo = tipo.type.name,
