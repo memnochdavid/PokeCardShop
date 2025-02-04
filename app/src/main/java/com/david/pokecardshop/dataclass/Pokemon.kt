@@ -278,12 +278,12 @@ class PokeInfoViewModel() : ViewModel() {
 
     private val _effect_description = mutableStateOf("")
     val effect_description: State<String> = _effect_description
-    private val _isAbilityListLoading = mutableStateOf(false) // Loading state for getPokemonAbility
+    private val _isAbilityListLoading = mutableStateOf(false)
     val isAbilityListLoading: State<Boolean> = _isAbilityListLoading
 
     private val _effect_name = mutableStateOf("")
     val effect_name: State<String> = _effect_name
-    private val _isAbilityDetailsLoading = mutableStateOf(false) // Loading state for getAbilityDetails
+    private val _isAbilityDetailsLoading = mutableStateOf(false)
     val isAbilityDetailsLoading: State<Boolean> = _isAbilityDetailsLoading
 
 
@@ -302,7 +302,7 @@ class PokeInfoViewModel() : ViewModel() {
 
     }
     fun getPokemonDescription(id: Int) {
-        _isDescriptionLoading.value = true // Start loading
+        _isDescriptionLoading.value = true
         viewModelScope.launch {
             val callDescription = service.getPokemonSpecies(id)
             try {

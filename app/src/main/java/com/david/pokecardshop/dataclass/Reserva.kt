@@ -71,6 +71,7 @@ fun Reservadas(
         false -> cargaTodasReservas(context, scope)
         true -> cargaReservasUsuario(usuario_key, context, scope)
     }
+
     if (isLoading) { //se asegura de haber cargado los datos de la nube antes de empezar a mostrar nada
         Box(
             modifier = modifier
@@ -86,6 +87,7 @@ fun Reservadas(
         }
     }
     else{
+
         Box(
             modifier = Modifier
                 .fillMaxSize()
@@ -102,10 +104,10 @@ fun Reservadas(
                 items(reservas) { reserva ->
                     val carta = cartasCreadas.find { it.carta_id == reserva.carta_id }
                     if (carta != null)
-                    CarPequeFB(carta = carta, onClick = {
-                        cartaGrande = !cartaGrande
-                        onCardClick = carta
-                    })
+                        CarPequeFB(carta = carta, onClick = {
+                            cartaGrande = !cartaGrande
+                            onCardClick = carta
+                        })
                 }
             }
             if (cartaGrande) {
@@ -170,9 +172,7 @@ fun cargaReservasUsuario(
                     }
                 }
                 //Toast.makeText(context, "Reservas cargadas con éxito", Toast.LENGTH_SHORT).show()
-            }
-
-            refBBDD.child("tienda").child("reservas").get().addOnFailureListener {
+            }.addOnFailureListener {
                 Log.e("UserError", "Error al cargar las reservas : ${it.message}")
                 Toast.makeText(context, "Error al cargar las reservas : ${it.message}", Toast.LENGTH_SHORT).show()
             }
