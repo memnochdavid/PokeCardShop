@@ -86,7 +86,8 @@ fun MainScreen() {
                 0 -> Screen.Lista.route
                 1 -> Screen.CrearCarta.route
                 2 -> Screen.CartasCreadas.route
-                3 -> Screen.Opciones.route
+                3 -> Screen.Reservas.route
+                4 -> Screen.Opciones.route
                 else -> {Screen.Lista.route}
             }
         }
@@ -94,8 +95,9 @@ fun MainScreen() {
                 when (selectedItem) {
                     0 -> Screen.Lista.route
                     1 -> Screen.CartasCreadas.route
+                    2 -> Screen.Reservas.route
                     3 -> Screen.Opciones.route
-                    else -> Screen.Lista.route // Default to Lista
+                    else -> Screen.Lista.route
                 }
             }
         }

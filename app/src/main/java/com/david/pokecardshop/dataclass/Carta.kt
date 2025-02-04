@@ -79,6 +79,7 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
 data class Carta(
+    var carta_id: String="",
     var number: String="",
     var nombre: String="",
     var descripcion: String="",
@@ -88,7 +89,11 @@ data class Carta(
     var fondo_foto: Int=0,
     var fondo_carta: Int=0,
     var tipo: String = ""
-)
+){
+    init{
+        carta_id = refBBDD.child("tienda").child("cartas").push().key!!
+    }
+}
 
 
 @Composable
@@ -316,11 +321,14 @@ fun Carta(
     val backgroundImage = painterResource(R.drawable.background_foto)
     var imagen_poke = painterResource(R.drawable.silueta)
 
+    val color_tipo = TypeToColor(tipo,1)
+    val color_tipo_transparente = TypeToColor(tipo,3)
+
     if (selectedImageUri != null) {
         imagen_poke = rememberAsyncImagePainter(caraImagenURL(nameText))
     }
     Card(
-        modifier = modifier,
+        modifier = modifier.background(Color.Transparent),
         shape = RoundedCornerShape(15.dp),
         elevation = CardDefaults.cardElevation(defaultElevation = 20.dp),
     ){
@@ -354,7 +362,7 @@ fun Carta(
                                 end.linkTo(parent.end)
                                 bottom.linkTo(foto.top)
                             }
-                            .background(TypeToColor(tipo,3)),
+                            .background(color_tipo_transparente),
                         horizontalArrangement = Arrangement.SpaceBetween,
                         verticalAlignment = Alignment.CenterVertically
                     ){
@@ -377,7 +385,7 @@ fun Carta(
                         contentDescription = "Background Image",
                         modifier = Modifier
                             .size(250.dp)
-                            .border(8.dp, color_electrico_dark, RectangleShape)
+                            .border(8.dp, color_tipo, RectangleShape)
                             .constrainAs(fondo_tipo) {
                                 top.linkTo(foto.top)
                                 start.linkTo(foto.start)
@@ -404,7 +412,7 @@ fun Carta(
                     Row(modifier = Modifier
                         .zIndex(5f)
                         .padding(top = 3.dp)
-                        .background(TypeToColor(tipo,3))
+                        .background(color_tipo_transparente)
                         .constrainAs(desc) {
                             top.linkTo(foto.bottom)
                             start.linkTo(parent.start)
@@ -414,7 +422,7 @@ fun Carta(
                     ){
                         Text(
                             text = adaptaDescripcion(descText),
-                            fontSize = 10.sp,
+                            fontSize = 12.sp,
                             color = Color.White,
                             modifier = Modifier
                                 .wrapContentSize()
@@ -427,7 +435,7 @@ fun Carta(
                         modifier = Modifier
                             .zIndex(5f)
                             .padding(top = 3.dp)
-                            .background(TypeToColor(tipo,3))
+                            .background(color_tipo_transparente)
                             .constrainAs(habilidad_poke) {
                                 top.linkTo(desc.bottom)
                                 start.linkTo(parent.start)
@@ -439,7 +447,7 @@ fun Carta(
                     ){
                         Text(
                             text = habilidadText,
-                            fontSize = 10.sp,
+                            fontSize = 13.sp,
                             fontWeight = FontWeight.Bold,
                             color = Color.White,
                             modifier = Modifier
@@ -448,7 +456,7 @@ fun Carta(
                         )
                         Text(
                             text = adaptaDescripcion(descHabilidad),
-                            fontSize = 10.sp,
+                            fontSize = 12.sp,
                             color = Color.White,
                             modifier = Modifier
                                 .wrapContentSize()
@@ -471,7 +479,7 @@ fun guardaCartaFB(
     scopeUser: CoroutineScope,
 
 ){
-    val identificador = refBBDD.child("tienda").child("cartas").push().key!!
+    val identificador = carta.carta_id
 
     scopeUser.launch {
         try{

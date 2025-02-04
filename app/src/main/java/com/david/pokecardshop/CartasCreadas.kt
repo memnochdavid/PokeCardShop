@@ -1,6 +1,5 @@
 package com.david.pokecardshop
 
-import android.util.Log
 import androidx.compose.animation.core.LinearEasing
 import androidx.compose.animation.core.RepeatMode
 import androidx.compose.animation.core.Spring
@@ -20,6 +19,7 @@ import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -27,7 +27,6 @@ import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.systemBarsPadding
-import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.lazy.grid.GridCells
@@ -42,56 +41,42 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.drawWithCache
 import androidx.compose.ui.draw.scale
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.graphics.TileMode
-import androidx.compose.ui.graphics.lerp
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.zIndex
 import androidx.constraintlayout.compose.ConstraintLayout
-import androidx.core.graphics.blue
-import androidx.core.graphics.green
-import androidx.core.graphics.red
 import androidx.navigation.NavHostController
 import coil.compose.rememberAsyncImagePainter
 import com.david.pokecardshop.dataclass.Carta
-import com.david.pokecardshop.dataclass.CreaCarta
-import com.david.pokecardshop.dataclass.PokeInfoViewModel
-import com.david.pokecardshop.dataclass.Pokemon
+import com.david.pokecardshop.dataclass.Reserva
 import com.david.pokecardshop.dataclass.TypeStringToColor
-import com.david.pokecardshop.dataclass.TypeToBackground
-import com.david.pokecardshop.dataclass.TypeToColor
-import com.david.pokecardshop.dataclass.TypeToDrawableAPI
+import com.david.pokecardshop.dataclass.UsuarioFromKey
 import com.david.pokecardshop.dataclass.adaptaDescripcion
-import com.david.pokecardshop.dataclass.adaptaNombre
-import com.david.pokecardshop.dataclass.firstMayus
-import com.david.pokecardshop.ui.stuff.CardGrande
-import com.david.pokecardshop.ui.stuff.CardPeque2
+import com.david.pokecardshop.dataclass.guardaReservaFB
+import com.david.pokecardshop.ui.stuff.Boton
 import com.david.pokecardshop.ui.theme.*
-import kotlin.math.sin
-import kotlin.text.toFloat
 
 var cartasCreadas by mutableStateOf<List<Carta>>(emptyList())
 
 @Composable
-fun CartaFB(modifier: Modifier = Modifier, carta: Carta) {
+fun CartaFB(modifier: Modifier = Modifier, carta: Carta, onCartaGrandeChange: (Boolean) -> Unit,navController: NavHostController) {
 
     val numberText = carta.number
     val nameText = carta.nombre
@@ -117,21 +102,14 @@ fun CartaFB(modifier: Modifier = Modifier, carta: Carta) {
             Color.Transparent
         )
     )
-    var rotationX by remember { mutableStateOf(0f) }
-    var rotationY by remember { mutableStateOf(0f) }
-    var isDragging by remember { mutableStateOf(false) }
 
-    val animatedRotationX by animateFloatAsState(
-        targetValue = if (isDragging) rotationX else 0f,
-        animationSpec = tween(durationMillis = 500), label = ""
-    )
-    val animatedRotationY by animateFloatAsState(
-        targetValue = if (isDragging) rotationY else 0f,
-        animationSpec = tween(durationMillis = 500), label = ""
-    )
+    val sesion = UsuarioFromKey(usuario_key, refBBDD)
+
+    val context = navController.context
+    val scope = rememberCoroutineScope()
 
     Card(
-        modifier = modifier,
+        modifier = modifier.background(Color.Transparent),
         shape = RoundedCornerShape(15.dp),
         elevation = CardDefaults.cardElevation(defaultElevation = 20.dp),
     ){
@@ -233,7 +211,7 @@ fun CartaFB(modifier: Modifier = Modifier, carta: Carta) {
                 ){
                     Text(
                         text = adaptaDescripcion(descText),
-                        fontSize = 10.sp,
+                        fontSize = 12.sp,
                         color = Color.White,
                         modifier = Modifier
                             .wrapContentSize()
@@ -256,7 +234,7 @@ fun CartaFB(modifier: Modifier = Modifier, carta: Carta) {
                 ){
                     Text(
                         text = habilidadText,
-                        fontSize = 10.sp,
+                        fontSize = 13.sp,
                         fontWeight = FontWeight.Bold,
                         color = Color.White,
                         modifier = Modifier
@@ -265,7 +243,7 @@ fun CartaFB(modifier: Modifier = Modifier, carta: Carta) {
                     )
                     Text(
                         text = adaptaDescripcion(descHabilidad),
-                        fontSize = 10.sp,
+                        fontSize = 12.sp,
                         color = Color.White,
                         modifier = Modifier
                             .wrapContentSize()
@@ -275,7 +253,36 @@ fun CartaFB(modifier: Modifier = Modifier, carta: Carta) {
             }
 
         }
+        Spacer(modifier = Modifier.height(10.dp).background(Color.Transparent))
+        Row(
+            modifier = Modifier.fillMaxWidth().background(Color.Transparent),
+            horizontalArrangement = Arrangement.Center
+        ){
+            Boton(
+                text = "Atrás",
+                onClick = {
+                    onCartaGrandeChange(false)
+                }
+            )
+            if(!sesion.admin){
+                Boton(
+                    text = "Reserva!",
+                    onClick = {
 
+                        val reserva = sesion.key?.let {
+                            Reserva(
+                                usuario_id = it,
+                                carta_id = carta.carta_id
+                            )
+                        }
+                        if (reserva != null) {
+                            guardaReservaFB(reserva,context,scope)
+                        }
+                    }
+                )
+            }
+        }
+        Spacer(modifier = Modifier.height(10.dp).background(Color.Transparent))
     }
 }
 
@@ -359,7 +366,6 @@ fun CarPequeFB(carta: Carta, onClick: () -> Unit){
                             bottom.linkTo(nombre.top)
                             end.linkTo(parent.end)
                         }
-
                 )
                 Text(
                     text = carta.nombre,
@@ -426,7 +432,9 @@ fun CartasCreadas(modifier: Modifier = Modifier, navController: NavHostControlle
                     modifier = Modifier
                         .fillMaxSize(0.75f)
                         .wrapContentHeight(),
-                    carta = onCardClick
+                    carta = onCardClick,
+                    onCartaGrandeChange = { cartaGrande = it },
+                    navController = navController
                 )
             }
         }

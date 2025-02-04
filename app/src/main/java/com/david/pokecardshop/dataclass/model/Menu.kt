@@ -41,6 +41,7 @@ import com.david.pokecardshop.VerListaPokeAPI
 import com.david.pokecardshop.dataclass.CreaCarta
 import com.david.pokecardshop.dataclass.FormularioCarta
 import com.david.pokecardshop.dataclass.Pokemon
+import com.david.pokecardshop.dataclass.Reservadas
 import com.david.pokecardshop.dataclass.UsuarioFromKey
 import com.david.pokecardshop.listaByGen
 import com.david.pokecardshop.refBBDD
@@ -57,9 +58,9 @@ fun Menu(
     Log.d("ADMIN_menu", "$sesion")
     Log.d("usuario_key_menu", usuario_key)
     val items = if (!sesion.admin) {
-        listOf("Lista", "Cartas Creadas","Opciones")
+        listOf("Lista", "Cartas Creadas","Reservas","Opciones")
     } else {
-        listOf("Lista", "Crear Carta", "Cartas Creadas", "Opciones")
+        listOf("Lista", "Crear Carta", "Cartas Creadas","Reservas", "Opciones")
     }
     val selectedColor = blanco80
     val unselectedColor = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f)
@@ -79,6 +80,7 @@ fun Menu(
                             "Lista" -> Icon(Icons.AutoMirrored.Filled.List, contentDescription = item)
                             "Crear Carta" -> Icon(Icons.Filled.Add, contentDescription = item)
                             "Cartas Creadas" -> Icon(Icons.Filled.Face, contentDescription = item)
+                            "Reservas" -> Icon(Icons.Filled.Star, contentDescription = item)
                             "Opciones" -> Icon(Icons.Filled.Settings, contentDescription = item)
                             else -> Icon(Icons.AutoMirrored.Filled.List, contentDescription = item)
                         }
@@ -102,6 +104,7 @@ sealed class Screen(val route: String) {
     object Lista : Screen("Lista")
     object CrearCarta : Screen("CrearCarta")
     object CartasCreadas : Screen("CartasCreadas")
+    object Reservas : Screen("Reservas")
     object Opciones : Screen("Opciones")
 }
 @Composable
@@ -144,5 +147,13 @@ fun Navigation(navController: NavHostController, modifier: Modifier) {
                 }
             }
         }
+        composable(Screen.Reservas.route) {
+            PokeCardShopTheme {
+                Scaffold(modifier = Modifier.fillMaxSize()){ innerPadding ->
+                    Reservadas(modifier = Modifier.padding(innerPadding), navController = navController)
+                }
+            }
+        }
+
     }
 }
