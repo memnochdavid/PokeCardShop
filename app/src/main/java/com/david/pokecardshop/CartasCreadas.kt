@@ -1,9 +1,15 @@
 package com.david.pokecardshop
 
 import android.util.Log
+import androidx.compose.animation.core.LinearEasing
+import androidx.compose.animation.core.RepeatMode
 import androidx.compose.animation.core.Spring
+import androidx.compose.animation.core.animateFloat
 import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.core.infiniteRepeatable
+import androidx.compose.animation.core.rememberInfiniteTransition
 import androidx.compose.animation.core.spring
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -39,11 +45,19 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.alpha
+import androidx.compose.ui.draw.drawWithCache
 import androidx.compose.ui.draw.scale
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.graphics.RectangleShape
+import androidx.compose.ui.graphics.TileMode
+import androidx.compose.ui.graphics.lerp
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
@@ -52,6 +66,10 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.zIndex
 import androidx.constraintlayout.compose.ConstraintLayout
+import androidx.core.graphics.blue
+import androidx.core.graphics.green
+import androidx.core.graphics.red
+import androidx.navigation.NavHostController
 import coil.compose.rememberAsyncImagePainter
 import com.david.pokecardshop.dataclass.Carta
 import com.david.pokecardshop.dataclass.CreaCarta
@@ -67,6 +85,8 @@ import com.david.pokecardshop.dataclass.firstMayus
 import com.david.pokecardshop.ui.stuff.CardGrande
 import com.david.pokecardshop.ui.stuff.CardPeque2
 import com.david.pokecardshop.ui.theme.*
+import kotlin.math.sin
+import kotlin.text.toFloat
 
 var cartasCreadas by mutableStateOf<List<Carta>>(emptyList())
 
@@ -79,9 +99,24 @@ fun CartaFB(modifier: Modifier = Modifier, carta: Carta) {
     val habilidadText = carta.habilidad_poke[0]
     val descHabilidad = carta.habilidad_poke[1]
 
+    val color_tipo = TypeStringToColor(carta.tipo,1)
+    val color_tipo_transparente = TypeStringToColor(carta.tipo,2)
+
     val backgroundImage = painterResource(carta.fondo_foto)
     val backgroundCard = painterResource(carta.fondo_carta)
     var imagen_poke = rememberAsyncImagePainter(carta.imagen)
+
+    val density = LocalDensity.current
+    val gradientWidth = with(density) { 200.dp.toPx() }
+    val shimmer = shimmerBrush(
+        gradientWidthPx = gradientWidth,
+        durationMillis = 3500,
+        colors = listOf(
+            Color.Transparent,
+            color_tipo.copy(alpha = 0.6f),
+            Color.Transparent
+        )
+    )
 
     Card(
         modifier = modifier,
@@ -96,8 +131,15 @@ fun CartaFB(modifier: Modifier = Modifier, carta: Carta) {
             Image(
                 painter = backgroundCard,
                 contentDescription = "Background Image",
-                modifier = Modifier.matchParentSize(),
-                contentScale = ContentScale.Crop
+                modifier = Modifier
+                    .matchParentSize()
+                    .drawWithCache {
+                        onDrawWithContent {
+                            drawContent()
+                            drawRect(shimmer)
+                        }
+                    },
+                contentScale = ContentScale.Crop,
             )
             ConstraintLayout(
                 modifier = Modifier
@@ -109,7 +151,7 @@ fun CartaFB(modifier: Modifier = Modifier, carta: Carta) {
                     modifier = Modifier
                         .zIndex(5f)
                         .fillMaxWidth()
-                        .background(TypeStringToColor(carta.tipo,2))
+                        .background(color_tipo_transparente)
                         .constrainAs(datos) {
                             top.linkTo(parent.top)
                             start.linkTo(parent.start)
@@ -136,7 +178,13 @@ fun CartaFB(modifier: Modifier = Modifier, carta: Carta) {
                     contentDescription = "Background Image",
                     modifier = Modifier
                         .size(250.dp)
-                        .border(8.dp, color_electrico_dark, RectangleShape)
+                        .border(8.dp, color_tipo, RectangleShape)
+                        .drawWithCache {
+                            onDrawWithContent {
+                                drawContent()
+                                drawRect(shimmer)
+                            }
+                        }
                         .constrainAs(fondo_tipo) {
                             top.linkTo(foto.top)
                             start.linkTo(foto.start)
@@ -163,7 +211,7 @@ fun CartaFB(modifier: Modifier = Modifier, carta: Carta) {
                 Row(modifier = Modifier
                     .zIndex(5f)
                     .padding(top = 3.dp)
-                    .background(TypeStringToColor(carta.tipo,2))
+                    .background(color_tipo_transparente)
                     .constrainAs(desc) {
                         top.linkTo(foto.bottom)
                         start.linkTo(parent.start)
@@ -186,7 +234,7 @@ fun CartaFB(modifier: Modifier = Modifier, carta: Carta) {
                     modifier = Modifier
                         .zIndex(5f)
                         .padding(top = 3.dp)
-                        .background(TypeStringToColor(carta.tipo,2))
+                        .background(color_tipo_transparente)
                         .constrainAs(habilidad_poke) {
                             top.linkTo(desc.bottom)
                             start.linkTo(parent.start)
@@ -320,7 +368,7 @@ fun CarPequeFB(carta: Carta, onClick: () -> Unit){
 }
 
 @Composable
-fun CartasCreadas(modifier: Modifier = Modifier){
+fun CartasCreadas(modifier: Modifier = Modifier, navController: NavHostController){
     var onCardClick by remember { mutableStateOf(Carta()) }
     var cartaGrande by remember { mutableStateOf(false) }
     var isLoading by remember { mutableStateOf(true) }
@@ -328,7 +376,9 @@ fun CartasCreadas(modifier: Modifier = Modifier){
     cargaCartasCreadas(onUpdateIsLoading = { isLoading = it })
     if (isLoading) { //se asegura de haber cargado los datos de la nube antes de empezar a mostrar nada
         Box(
-            modifier = modifier.background(color_fuego_dark).fillMaxSize(),
+            modifier = modifier
+                .background(color_fuego_dark)
+                .fillMaxSize(),
             contentAlignment = Alignment.Center
         ) {
             CircularProgressIndicator(
@@ -387,9 +437,40 @@ fun cargaCartasCreadas(
     }
 }
 
-
-@Preview(showBackground = true, widthDp = 360, heightDp = 720)
 @Composable
-fun GreetingPreview22() {
-    CartaFB( carta = Carta())
+fun shimmerBrush(
+    durationMillis: Int = 3000,
+    gradientWidthPx: Float,
+    colors: List<Color> = listOf(
+        Color.Transparent,
+        Color.White.copy(alpha = 0.6f),
+        Color.Transparent
+    )
+): Brush {
+    val infiniteTransition = rememberInfiniteTransition(label = "infinite transition")
+    val offset by infiniteTransition.animateFloat(
+        initialValue = -2f * gradientWidthPx,
+        targetValue = 2f * gradientWidthPx,
+        animationSpec = infiniteRepeatable(
+            animation = tween(durationMillis, easing = LinearEasing),
+            repeatMode = RepeatMode.Restart
+        ), label = "offset"
+    )
+
+    return Brush.linearGradient(
+        colors = colors,
+        start = Offset(offset, 0f),
+        end = Offset(offset + gradientWidthPx, gradientWidthPx),
+        tileMode = TileMode.Mirror
+    )
 }
+
+
+
+
+//
+//@Preview(showBackground = true, widthDp = 360, heightDp = 720)
+//@Composable
+//fun GreetingPreview22() {
+//    CartaFB( carta = Carta())
+//}

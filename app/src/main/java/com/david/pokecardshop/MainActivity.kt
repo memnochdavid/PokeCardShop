@@ -40,6 +40,7 @@ import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.navigation.NavHostController
 import androidx.navigation.compose.rememberNavController
 import com.david.pokecardshop.dataclass.PokeInfoViewModel
 import com.david.pokecardshop.dataclass.Pokemon
@@ -79,14 +80,27 @@ fun MainScreen() {
     var selectedItem by remember { mutableIntStateOf(0) }
     val sesion = UsuarioFromKey(usuario_key, refBBDD)
 
-    // New: Get the current route from the selected item
-    val currentRoute = when (selectedItem) {
-        0 -> Screen.Lista.route
-        1 -> if (sesion.admin) Screen.CrearCarta.route else Screen.Opciones.route
-        2 -> Screen.CartasCreadas.route
-        3 -> Screen.Opciones.route
-        else -> Screen.Lista.route // Default to Lista
-    }
+    val currentRoute = when(sesion.admin) {
+        true -> {
+            when (selectedItem) {
+                0 -> Screen.Lista.route
+                1 -> Screen.CrearCarta.route
+                2 -> Screen.CartasCreadas.route
+                3 -> Screen.Opciones.route
+                else -> {Screen.Lista.route}
+            }
+        }
+            false -> {
+                when (selectedItem) {
+                    0 -> Screen.Lista.route
+                    1 -> Screen.CartasCreadas.route
+                    3 -> Screen.Opciones.route
+                    else -> Screen.Lista.route // Default to Lista
+                }
+            }
+        }
+
+
 
     ModalNavigationDrawer(
         drawerState = drawerState,
@@ -95,24 +109,30 @@ fun MainScreen() {
                 selectedItem = selectedItem,
                 onItemSelected = { index ->
                     selectedItem = index
-                    // New: Navigate when an item is selected
-                    scope.launch {
-                        navController.navigate(
-                            when (index) {
+                    when(sesion.admin) {
+                        true -> {
+                            when (selectedItem) {
                                 0 -> Screen.Lista.route
-                                1 -> if (sesion.admin) Screen.CrearCarta.route else Screen.Opciones.route
+                                1 -> Screen.CrearCarta.route
                                 2 -> Screen.CartasCreadas.route
                                 3 -> Screen.Opciones.route
-                                else -> Screen.Lista.route
+                                else -> {Screen.Lista.route}
                             }
-                        )
-                        drawerState.close()
+                        }
+                        false -> {
+                            when (selectedItem) {
+                                0 -> Screen.Lista.route
+                                1 -> Screen.CartasCreadas.route
+                                3 -> Screen.Opciones.route
+                                else -> Screen.Lista.route // Default to Lista
+                            }
+                        }
                     }
                 },
                 onCloseDrawer = { scope.launch { drawerState.close() } }
             )
         }
-    ) {
+    ){
         Box {
             Scaffold() { paddingValues ->
                 Navigation(navController = navController, modifier = Modifier.padding(paddingValues))
@@ -144,7 +164,7 @@ fun MainScreen() {
 
 
 @Composable
-fun VerListaPokeAPI(modifier: Modifier = Modifier,listaApi: List<Pokemon>) {
+fun VerListaPokeAPI(modifier: Modifier = Modifier,listaApi: List<Pokemon>, navController: NavHostController) {
     var onCardClick by remember { mutableStateOf(false) }
     //var pokemonClicked by remember { mutableStateOf(List<Pokemon>())}
     var listaFiltrada by remember { mutableStateOf(listaApi) }

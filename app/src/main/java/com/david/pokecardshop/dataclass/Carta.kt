@@ -63,6 +63,7 @@ import androidx.compose.ui.unit.toSize
 import androidx.compose.ui.zIndex
 import androidx.constraintlayout.compose.ConstraintLayout
 import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.navigation.NavHostController
 import coil.compose.rememberAsyncImagePainter
 import com.david.pokecardshop.R
 import com.david.pokecardshop.refBBDD
@@ -91,7 +92,7 @@ data class Carta(
 
 
 @Composable
-fun CreaCarta(modifier: Modifier = Modifier) {
+fun CreaCarta(modifier: Modifier = Modifier, navController: NavHostController) {
     val context = LocalContext.current
     val scopeUser = rememberCoroutineScope()
     var numberText by remember { mutableStateOf("#000") }
@@ -113,8 +114,6 @@ fun CreaCarta(modifier: Modifier = Modifier) {
     val isAbilityDetailsLoading by viewModel.isAbilityDetailsLoading
     var autoSelect by remember { mutableStateOf(false) }
 
-
-
     LaunchedEffect(autoSelect) {
         if (autoSelect) {
             viewModel.getPokemonInfo(nameText)
@@ -129,7 +128,7 @@ fun CreaCarta(modifier: Modifier = Modifier) {
                 nameText = it.name.firstMayus()
                 viewModel.getPokemonAbility(it.id)
                 viewModel.getPokemonDescription(it.id)
-                delay(1000)
+                delay(3000)
                 descText = spanishDescription.value
                 habilidadText = habilidadName.value
                 Log.d("NOMHabilidad", habilidad.value)
@@ -221,7 +220,7 @@ fun CreaCarta(modifier: Modifier = Modifier) {
                 Boton(
                     text = "Atras",
                     onClick = {
-                        //todo
+                        navController.popBackStack()
                     }
                 )
             }
@@ -488,9 +487,10 @@ fun guardaCartaFB(
     }
 }
 
-
+/*
 @Preview(showBackground = true, widthDp = 360, heightDp = 720)
 @Composable
 fun GreetingPreview2() {
     CreaCarta()
 }
+*/

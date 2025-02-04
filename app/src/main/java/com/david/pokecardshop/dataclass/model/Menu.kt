@@ -57,7 +57,7 @@ fun Menu(
     Log.d("ADMIN_menu", "$sesion")
     Log.d("usuario_key_menu", usuario_key)
     val items = if (!sesion.admin) {
-        listOf("Lista", "Opciones")
+        listOf("Lista", "Cartas Creadas","Opciones")
     } else {
         listOf("Lista", "Crear Carta", "Cartas Creadas", "Opciones")
     }
@@ -111,7 +111,7 @@ fun Navigation(navController: NavHostController, modifier: Modifier) {
         composable(Screen.Lista.route) {
             PokeCardShopTheme {
                 Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
-                    VerListaPokeAPI(modifier = Modifier.padding(innerPadding), listaApi = pokemonList)
+                    VerListaPokeAPI(modifier = Modifier.padding(innerPadding), listaApi = pokemonList, navController = navController)
                 }
             }
         }
@@ -133,14 +133,14 @@ fun Navigation(navController: NavHostController, modifier: Modifier) {
         composable(Screen.CrearCarta.route) {
             PokeCardShopTheme {
                 Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
-                    CreaCarta( modifier = Modifier.padding(innerPadding))
+                    CreaCarta( modifier = Modifier.padding(innerPadding), navController = navController)
                 }
             }
         }
         composable(Screen.CartasCreadas.route) {
             PokeCardShopTheme {
                 Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
-                    CartasCreadas(modifier = Modifier.padding(innerPadding))
+                    CartasCreadas(modifier = Modifier.padding(innerPadding), navController = navController)
                 }
             }
         }
