@@ -117,6 +117,18 @@ fun CartaFB(modifier: Modifier = Modifier, carta: Carta) {
             Color.Transparent
         )
     )
+    var rotationX by remember { mutableStateOf(0f) }
+    var rotationY by remember { mutableStateOf(0f) }
+    var isDragging by remember { mutableStateOf(false) }
+
+    val animatedRotationX by animateFloatAsState(
+        targetValue = if (isDragging) rotationX else 0f,
+        animationSpec = tween(durationMillis = 500), label = ""
+    )
+    val animatedRotationY by animateFloatAsState(
+        targetValue = if (isDragging) rotationY else 0f,
+        animationSpec = tween(durationMillis = 500), label = ""
+    )
 
     Card(
         modifier = modifier,
