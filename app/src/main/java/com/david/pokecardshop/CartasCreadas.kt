@@ -18,6 +18,7 @@ import androidx.compose.foundation.indication
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -109,163 +110,166 @@ fun CartaFB(modifier: Modifier = Modifier, carta: Carta, onCartaGrandeChange: (B
 
     val context = navController.context
     val scope = rememberCoroutineScope()
-
-    Card(
-        modifier = Modifier.background(Color.Transparent).fillMaxWidth(0.75f).wrapContentHeight(),
-        shape = RoundedCornerShape(15.dp),
-        elevation = CardDefaults.cardElevation(defaultElevation = 20.dp),
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .background(Color.Transparent)
+            .padding(top = 0.dp),
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.Center
     ){
-        Box(
-            modifier = Modifier
-                .wrapContentSize()
-                .background(Color.Transparent)
-        ) {
-            Image(
-                painter = backgroundCard,
-                contentDescription = "Background Image",
-                modifier = Modifier
-                    .matchParentSize()
-                    .drawWithCache {
-                        onDrawWithContent {
-                            drawContent()
-                            drawRect(shimmer)
-                        }
-                    },
-                contentScale = ContentScale.Crop,
-            )
-            ConstraintLayout(
+        Card(
+            modifier = Modifier.background(Color.Transparent).fillMaxWidth(0.75f).wrapContentHeight(),
+            shape = RoundedCornerShape(15.dp),
+            elevation = CardDefaults.cardElevation(defaultElevation = 20.dp),
+        ){
+            Box(
                 modifier = Modifier
                     .wrapContentSize()
-                    .padding(25.dp)
+                    .background(Color.Transparent)
             ) {
-                val (desc, foto, datos,fondo_tipo, habilidad_poke) = createRefs()
-                Row(
-                    modifier = Modifier
-                        .zIndex(5f)
-                        .fillMaxWidth()
-                        .background(color_tipo_transparente)
-                        .constrainAs(datos) {
-                            top.linkTo(parent.top)
-                            start.linkTo(parent.start)
-                            end.linkTo(parent.end)
-                            bottom.linkTo(foto.top)
-                        },
-                    horizontalArrangement = Arrangement.SpaceBetween,
-                    verticalAlignment = Alignment.CenterVertically
-                ){
-                    Text(
-                        fontWeight = FontWeight.Bold,
-                        text = numberText,
-                        color = Color.White,
-                        fontSize = 20.sp)
-
-                    Text(
-                        fontWeight = FontWeight.Bold,
-                        text = nameText,
-                        color = Color.White,
-                        fontSize = 20.sp)
-                }
                 Image(
-                    painter = backgroundImage,
+                    painter = backgroundCard,
                     contentDescription = "Background Image",
                     modifier = Modifier
-                        .size(250.dp)
-                        .border(8.dp, color_tipo, RectangleShape)
+                        .matchParentSize()
                         .drawWithCache {
                             onDrawWithContent {
                                 drawContent()
                                 drawRect(shimmer)
                             }
-                        }
-                        .constrainAs(fondo_tipo) {
-                            top.linkTo(foto.top)
-                            start.linkTo(foto.start)
-                            end.linkTo(foto.end)
-                            bottom.linkTo(foto.bottom)
                         },
                     contentScale = ContentScale.Crop,
                 )
-
-                Image(
-                    painter = imagen_poke,
-                    contentDescription = "Pokemon",
+                ConstraintLayout(
                     modifier = Modifier
-                        .size(300.dp)
-                        .fillMaxSize()
-                        .constrainAs(foto) {
-                            top.linkTo(datos.bottom)
-                            start.linkTo(parent.start)
-                            end.linkTo(parent.end)
-                            //bottom.linkTo(datos.top)
-                        }
-                )
-
-                Row(modifier = Modifier
-                    .zIndex(5f)
-                    .padding(top = 3.dp)
-                    .background(color_tipo_transparente)
-                    .constrainAs(desc) {
-                        top.linkTo(foto.bottom)
-                        start.linkTo(parent.start)
-                        end.linkTo(parent.end)
-                        bottom.linkTo(habilidad_poke.top)
-                    }
-                ){
-                    Text(
-                        text = adaptaDescripcion(descText),
-                        fontSize = 12.sp,
-                        color = Color.White,
+                        .wrapContentSize()
+                        .padding(25.dp)
+                ) {
+                    val (desc, foto, datos,fondo_tipo, habilidad_poke) = createRefs()
+                    Row(
                         modifier = Modifier
-                            .wrapContentSize()
-                            .padding(horizontal = 10.dp)
+                            .zIndex(5f)
+                            .fillMaxWidth()
+                            .background(color_tipo_transparente)
+                            .constrainAs(datos) {
+                                top.linkTo(parent.top)
+                                start.linkTo(parent.start)
+                                end.linkTo(parent.end)
+                                bottom.linkTo(foto.top)
+                            },
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically
+                    ){
+                        Text(
+                            fontWeight = FontWeight.Bold,
+                            text = numberText,
+                            color = Color.White,
+                            fontSize = 20.sp)
 
+                        Text(
+                            fontWeight = FontWeight.Bold,
+                            text = nameText,
+                            color = Color.White,
+                            fontSize = 20.sp)
+                    }
+                    Image(
+                        painter = backgroundImage,
+                        contentDescription = "Background Image",
+                        modifier = Modifier
+                            .size(250.dp)
+                            .border(8.dp, color_tipo, RectangleShape)
+                            .drawWithCache {
+                                onDrawWithContent {
+                                    drawContent()
+                                    drawRect(shimmer)
+                                }
+                            }
+                            .constrainAs(fondo_tipo) {
+                                top.linkTo(foto.top)
+                                start.linkTo(foto.start)
+                                end.linkTo(foto.end)
+                                bottom.linkTo(foto.bottom)
+                            },
+                        contentScale = ContentScale.Crop,
                     )
 
-                }
-                Row(
-                    modifier = Modifier
+                    Image(
+                        painter = imagen_poke,
+                        contentDescription = "Pokemon",
+                        modifier = Modifier
+                            .size(300.dp)
+                            .fillMaxSize()
+                            .constrainAs(foto) {
+                                top.linkTo(datos.bottom)
+                                start.linkTo(parent.start)
+                                end.linkTo(parent.end)
+                                //bottom.linkTo(datos.top)
+                            }
+                    )
+
+                    Row(modifier = Modifier
                         .zIndex(5f)
                         .padding(top = 3.dp)
                         .background(color_tipo_transparente)
-                        .constrainAs(habilidad_poke) {
-                            top.linkTo(desc.bottom)
+                        .constrainAs(desc) {
+                            top.linkTo(foto.bottom)
                             start.linkTo(parent.start)
                             end.linkTo(parent.end)
-                            bottom.linkTo(parent.bottom)
+                            bottom.linkTo(habilidad_poke.top)
                         }
-                ){
-                    Text(
-                        text = habilidadText,
-                        fontSize = 13.sp,
-                        fontWeight = FontWeight.Bold,
-                        color = Color.White,
+                    ){
+                        Text(
+                            text = adaptaDescripcion(descText),
+                            fontSize = 12.sp,
+                            color = Color.White,
+                            modifier = Modifier
+                                .wrapContentSize()
+                                .padding(horizontal = 10.dp)
+
+                        )
+
+                    }
+                    Row(
                         modifier = Modifier
-                            .wrapContentSize()
-                            .padding(horizontal = 10.dp)
-                    )
-                    Text(
-                        text = adaptaDescripcion(descHabilidad),
-                        fontSize = 12.sp,
-                        color = Color.White,
-                        modifier = Modifier
-                            .wrapContentSize()
-                            .padding(horizontal = 10.dp)
-                    )
+                            .zIndex(5f)
+                            .padding(top = 3.dp)
+                            .background(color_tipo_transparente)
+                            .constrainAs(habilidad_poke) {
+                                top.linkTo(desc.bottom)
+                                start.linkTo(parent.start)
+                                end.linkTo(parent.end)
+                                bottom.linkTo(parent.bottom)
+                            }
+                    ){
+                        Text(
+                            text = habilidadText,
+                            fontSize = 13.sp,
+                            fontWeight = FontWeight.Bold,
+                            color = Color.White,
+                            modifier = Modifier
+                                .wrapContentSize()
+                                .padding(horizontal = 10.dp)
+                        )
+                        Text(
+                            text = adaptaDescripcion(descHabilidad),
+                            fontSize = 12.sp,
+                            color = Color.White,
+                            modifier = Modifier
+                                .wrapContentSize()
+                                .padding(horizontal = 10.dp)
+                        )
+                    }
                 }
+
             }
 
         }
+        Spacer(modifier = Modifier.height(15.dp).background(Color.Transparent))
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .background(color_tipo_transparente)
-                .drawWithCache {
-                    onDrawWithContent {
-                        drawContent()
-                        drawRect(shimmer)
-                    }
-                    onDrawBehind {drawRect(shimmer)}
-                },
+                .background(Color.Transparent),
             horizontalArrangement = Arrangement.Center
         ){
             Boton(
@@ -317,8 +321,9 @@ fun CartaFB(modifier: Modifier = Modifier, carta: Carta, onCartaGrandeChange: (B
                 }
             }
         }
-
     }
+
+
 }
 
 @Composable
