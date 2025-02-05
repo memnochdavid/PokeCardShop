@@ -1,5 +1,14 @@
 package com.david.pokecardshop
 
+import android.content.ContentValues
+import android.content.Context
+import android.graphics.Bitmap
+import android.net.Uri
+import android.os.Build
+import android.os.Environment
+import android.provider.MediaStore
+import androidx.activity.compose.setContent
+import androidx.activity.result.launch
 import androidx.compose.animation.core.LinearEasing
 import androidx.compose.animation.core.RepeatMode
 import androidx.compose.animation.core.Spring
@@ -47,14 +56,26 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.drawWithCache
+import androidx.compose.ui.draw.drawWithContent
 import androidx.compose.ui.draw.scale
 import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.graphics.Canvas
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.graphics.TileMode
+import androidx.compose.ui.graphics.asAndroidBitmap
+import androidx.compose.ui.graphics.layer.drawLayer
+import androidx.compose.ui.graphics.rememberGraphicsLayer
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.layout.boundsInRoot
+import androidx.compose.ui.layout.layout
+import androidx.compose.ui.layout.onGloballyPositioned
+import androidx.compose.ui.platform.ComposeView
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.painterResource
@@ -74,6 +95,11 @@ import com.david.pokecardshop.dataclass.adaptaDescripcion
 import com.david.pokecardshop.dataclass.guardaReservaFB
 import com.david.pokecardshop.ui.stuff.Boton
 import com.david.pokecardshop.ui.theme.*
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
+import java.io.File
+import java.io.OutputStream
 
 var cartasCreadas by mutableStateOf<List<Carta>>(emptyList())
 var reservasCreadas by mutableStateOf<List<Reserva>>(emptyList())
@@ -106,6 +132,11 @@ fun CartaFB(modifier: Modifier = Modifier, carta: Carta, onCartaGrandeChange: (B
         )
     )
 
+    ///////////
+    var isSaving by remember { mutableStateOf(false) }
+    val coroutineScope = rememberCoroutineScope()
+    val graphicsLayer = rememberGraphicsLayer()
+    /////////
     val sesion = UsuarioFromKey(usuario_key, refBBDD)
 
     val context = navController.context
@@ -119,7 +150,16 @@ fun CartaFB(modifier: Modifier = Modifier, carta: Carta, onCartaGrandeChange: (B
         verticalArrangement = Arrangement.Center
     ){
         Card(
-            modifier = Modifier.background(Color.Transparent).fillMaxWidth(0.75f).wrapContentHeight(),
+            modifier = Modifier
+                .background(Color.Transparent)
+                .fillMaxWidth(0.75f)
+                .drawWithContent {
+                    graphicsLayer.record {
+                        this@drawWithContent.drawContent()
+                    }
+                    drawLayer(graphicsLayer)
+                }
+                .wrapContentHeight(),
             shape = RoundedCornerShape(15.dp),
             elevation = CardDefaults.cardElevation(defaultElevation = 20.dp),
         ){
@@ -265,7 +305,9 @@ fun CartaFB(modifier: Modifier = Modifier, carta: Carta, onCartaGrandeChange: (B
             }
 
         }
-        Spacer(modifier = Modifier.height(15.dp).background(Color.Transparent))
+        Spacer(modifier = Modifier
+            .height(15.dp)
+            .background(Color.Transparent))
         Row(
             modifier = Modifier
                 .fillMaxWidth()
@@ -279,7 +321,6 @@ fun CartaFB(modifier: Modifier = Modifier, carta: Carta, onCartaGrandeChange: (B
                 }
             )
             if(!isPropiedad){
-
                 //El usuario ve si ha reservado o no la carta
                 if(!sesion.admin){
                     if(carta.carta_id in reservasCreadas.map { it.carta_id }){
@@ -320,10 +361,29 @@ fun CartaFB(modifier: Modifier = Modifier, carta: Carta, onCartaGrandeChange: (B
                     }
                 }
             }
+            else{
+                Boton(
+                    text = if (isSaving) "Guardando..." else "Guardar",
+                    onClick = {
+                        if (!isSaving) {
+                            isSaving = true
+                            coroutineScope.launch {
+                                val bitmap = graphicsLayer.toImageBitmap()
+                                try {
+                                    withContext(Dispatchers.IO) {
+                                        saveImageToGallery(context, bitmap, carta.carta_id)
+                                    }
+                                } catch (e: Exception) {}
+                                finally {
+                                    isSaving = false
+                                }
+                            }
+                        }
+                    }
+                )
+            }
         }
     }
-
-
 }
 
 @Composable
@@ -529,12 +589,43 @@ fun shimmerBrush(
     )
 }
 
+fun saveImageToGallery(context: Context, bitmap: ImageBitmap, cartaId: String) {
+    val androidBitmap = bitmap.asAndroidBitmap()
+    val displayName = "PokeCard_$cartaId.png"
+    val mimeType = "image/png"
+    val relativeLocation = Environment.DIRECTORY_PICTURES + File.separator + "PokeCardShop"
 
+    val values = ContentValues().apply {
+        put(MediaStore.MediaColumns.DISPLAY_NAME, displayName)
+        put(MediaStore.MediaColumns.MIME_TYPE, mimeType)
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+            put(MediaStore.MediaColumns.RELATIVE_PATH, relativeLocation)
+            put(MediaStore.MediaColumns.IS_PENDING, 1)
+        }
+    }
 
+    val resolver = context.contentResolver
+    var uri: Uri? = null
 
-//
-//@Preview(showBackground = true, widthDp = 360, heightDp = 720)
-//@Composable
-//fun GreetingPreview22() {
-//    CartaFB( carta = Carta())
-//}
+    try {
+        uri = resolver.insert(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, values)
+            ?: throw Exception("Failed to create new MediaStore record.")
+
+        uri?.let {
+            resolver.openOutputStream(it)?.use { outputStream ->
+                if (!androidBitmap.compress(Bitmap.CompressFormat.PNG, 100, outputStream)) {
+                    throw Exception("Failed to save bitmap.")
+                }
+            }
+        }
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+            values.clear()
+            values.put(MediaStore.MediaColumns.IS_PENDING, 0)
+            resolver.update(uri, values, null, null)
+        }
+    } catch (e: Exception) {
+        uri?.let { resolver.delete(it, null, null) }
+        throw e
+    }
+}
