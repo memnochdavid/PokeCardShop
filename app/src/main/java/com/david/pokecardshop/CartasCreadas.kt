@@ -68,15 +68,17 @@ import com.david.pokecardshop.dataclass.Carta
 import com.david.pokecardshop.dataclass.Reserva
 import com.david.pokecardshop.dataclass.TypeStringToColor
 import com.david.pokecardshop.dataclass.UsuarioFromKey
+import com.david.pokecardshop.dataclass.aceptaReservaFB
 import com.david.pokecardshop.dataclass.adaptaDescripcion
 import com.david.pokecardshop.dataclass.guardaReservaFB
 import com.david.pokecardshop.ui.stuff.Boton
 import com.david.pokecardshop.ui.theme.*
 
 var cartasCreadas by mutableStateOf<List<Carta>>(emptyList())
+var reservasCreadas by mutableStateOf<List<Reserva>>(emptyList())
 
 @Composable
-fun CartaFB(modifier: Modifier = Modifier, carta: Carta, onCartaGrandeChange: (Boolean) -> Unit,navController: NavHostController) {
+fun CartaFB(modifier: Modifier = Modifier, carta: Carta, onCartaGrandeChange: (Boolean) -> Unit,navController: NavHostController, isReserva: Boolean = false) {
 
     val numberText = carta.number
     val nameText = carta.nombre
@@ -264,22 +266,46 @@ fun CartaFB(modifier: Modifier = Modifier, carta: Carta, onCartaGrandeChange: (B
                     onCartaGrandeChange(false)
                 }
             )
+            //El usuario ve si ha reservado o no la carta
             if(!sesion.admin){
-                Boton(
-                    text = "Reserva!",
-                    onClick = {
-
-                        val reserva = sesion.key?.let {
-                            Reserva(
-                                usuario_id = it,
-                                carta_id = carta.carta_id
-                            )
-                        }
-                        if (reserva != null) {
-                            guardaReservaFB(reserva,context,scope)
-                        }
+                if (carta != null) {
+                    if(carta.carta_id in reservasCreadas.map { it.carta_id }){
+                        Boton(
+                            text = "Pendiente",
+                            onClick = {}
+                        )
                     }
-                )
+                    else{
+                        Boton(
+                            text = "Reserva!",
+                            onClick = {
+
+                                val reserva = sesion.key?.let {
+                                    Reserva(
+                                        usuario_id = it,
+                                        carta_id = carta.carta_id
+                                    )
+                                }
+                                if (reserva != null) {
+                                    guardaReservaFB(reserva,context,scope)
+                                }
+                            }
+                        )
+                    }
+                }
+            }
+            //El administrador ve si ha reservado o no la carta
+            else{
+                val reserva = reservasCreadas.find { it.carta_id == carta.carta_id }
+
+                if (reserva != null) {
+                    Boton(
+                        text = "Aceptar",
+                        onClick = {
+                            aceptaReservaFB(reserva, context, scope)
+                        }
+                    )
+                }
             }
         }
         Spacer(modifier = Modifier.height(10.dp).background(Color.Transparent))

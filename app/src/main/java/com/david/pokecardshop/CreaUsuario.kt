@@ -187,7 +187,7 @@ fun FormNewUser(
 
                         scopeUser.launch {
                             try{
-                                newUser = Usuario(username,email,password,identificador)
+                                newUser = Usuario(username,email,password, emptyList(),identificador)
                                 refBBDD.child("tienda").child("usuarios").child(identificador).setValue(newUser)
 
                             }catch (e: Exception){

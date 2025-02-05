@@ -18,6 +18,7 @@ data class Usuario(
     var nick: String="",
     var email: String="",
     var pass: String="",
+    var propiedad: List<String> = emptyList(),
     var key: String? = null,
     var admin: Boolean=false,
 ):Serializable
