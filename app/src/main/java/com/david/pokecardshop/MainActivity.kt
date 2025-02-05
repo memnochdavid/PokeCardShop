@@ -1,5 +1,6 @@
 package com.david.pokecardshop
 
+import android.content.Context
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -39,6 +40,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.core.content.edit
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.rememberNavController
@@ -63,17 +65,27 @@ import kotlinx.coroutines.launch
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        //enableEdgeToEdge()
+        val sharedPreferences = getSharedPreferences("my_preferences", Context.MODE_PRIVATE)
+
         setContent {
-            PokeCardShopTheme {
-                MainScreen()
+            var darkTheme by remember {
+                mutableStateOf(sharedPreferences.getBoolean("dark_mode", false))
+            }
+
+            PokeCardShopTheme(darkTheme = darkTheme) {
+                MainScreen(
+                    onThemeChange = { isDark ->
+                        darkTheme = isDark
+                        sharedPreferences.edit { putBoolean("dark_mode", isDark) }
+                    }
+                )
             }
         }
     }
 }
 
 @Composable
-fun MainScreen() {
+fun MainScreen(onThemeChange: (Boolean) -> Unit) {
     val navController = rememberNavController()
     val drawerState = rememberDrawerState(initialValue = DrawerValue.Closed)
     val scope = rememberCoroutineScope()
@@ -115,7 +127,7 @@ fun MainScreen() {
     ) {
         Box {
             Scaffold() { paddingValues ->
-                Navigation(navController = navController, modifier = Modifier.padding(paddingValues))
+                Navigation(navController = navController, modifier = Modifier.padding(paddingValues), onThemeChange = onThemeChange)
             }
             FloatingActionButton(
                 onClick = { scope.launch { drawerState.open() } },
@@ -143,7 +155,7 @@ fun MainScreen() {
 
 
 
-
+/*
 @Composable
 fun VerListaPokeAPI(modifier: Modifier = Modifier,listaApi: List<Pokemon>, navController: NavHostController) {
     var onCardClick by remember { mutableStateOf(false) }
@@ -209,7 +221,7 @@ fun listaByGen(gen: Int): List<Pokemon> {
     }
     return pokemonListByGen
 }
-
+*/
 @Preview(showBackground = true)
 @Composable
 fun GreetingPreview2() {

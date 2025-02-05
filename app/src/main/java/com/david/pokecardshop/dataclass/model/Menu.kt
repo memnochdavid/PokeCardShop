@@ -40,17 +40,10 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import com.david.pokecardshop.CartasCreadas
 import com.david.pokecardshop.MisCartas
-import com.david.pokecardshop.VerListaPokeAPI
-import com.david.pokecardshop.cargaCartasCreadas
+import com.david.pokecardshop.Opciones
 import com.david.pokecardshop.dataclass.CreaCarta
-import com.david.pokecardshop.dataclass.FormularioCarta
-import com.david.pokecardshop.dataclass.Pokemon
 import com.david.pokecardshop.dataclass.Reservadas
-import com.david.pokecardshop.dataclass.UsuarioFromKey
-import com.david.pokecardshop.listaByGen
-import com.david.pokecardshop.refBBDD
 import com.david.pokecardshop.ui.theme.*
-import com.david.pokecardshop.usuario_key
 
 @Composable
 fun Menu(
@@ -98,7 +91,7 @@ sealed class Screen(val route: String) {
     object Opciones : Screen("Opciones")
 }
 @Composable
-fun Navigation(navController: NavHostController, modifier: Modifier) {
+fun Navigation(navController: NavHostController, modifier: Modifier,onThemeChange: (Boolean) -> Unit) {
     //val pokemonList = listaByGen(1)
     NavHost(navController = navController, startDestination = Screen.MisCartas.route) {
         composable(Screen.MisCartas.route) {
@@ -113,14 +106,7 @@ fun Navigation(navController: NavHostController, modifier: Modifier) {
             // Content for the Opciones screen
             PokeCardShopTheme {
                 Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
-                    Box(
-                        modifier = Modifier
-                            .fillMaxSize()
-                            .padding(innerPadding),
-                        contentAlignment = Alignment.Center
-                    ) {
-                        Text(text = "Opciones Screen", style = MaterialTheme.typography.headlineLarge)
-                    }
+                    Opciones(modifier = Modifier.padding(innerPadding), navController = navController, onThemeChange = onThemeChange)
                 }
             }
         }
