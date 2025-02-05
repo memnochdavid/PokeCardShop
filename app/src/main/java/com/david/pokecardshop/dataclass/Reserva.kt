@@ -36,13 +36,17 @@ import com.david.pokecardshop.CartaFB
 import com.david.pokecardshop.R
 import com.david.pokecardshop.cargaCartasCreadas
 import com.david.pokecardshop.cartasCreadas
+import com.david.pokecardshop.misCartas
 import com.david.pokecardshop.refBBDD
 import com.david.pokecardshop.reservasCreadas
 import com.david.pokecardshop.ui.theme.color_fuego_dark
 import com.david.pokecardshop.usuario_key
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.tasks.await
 import kotlin.collections.addAll
+import kotlin.collections.getValue
+import kotlin.io.path.exists
 import kotlin.text.clear
 
 data class Reserva(
@@ -168,30 +172,31 @@ fun guardaReservaFB(
 fun aceptaReservaFB(
     reserva: Reserva,
     context: Context,
-    scopeUser: CoroutineScope
-){
-    var propiedad_lista:MutableList<String> = mutableListOf()
-
+    scopeUser: CoroutineScope,
+    cartas_del_usuario: List<String>
+) {
     scopeUser.launch {
-        try{
-            refBBDD.child("tienda").child("usuarios").child(reserva.usuario_id).child("propiedad").get().addOnSuccessListener {
+        try {
+            val dataSnapshot = refBBDD.child("tienda").child("usuarios").child(reserva.usuario_id).child("propiedad").get().await()
 
-                for (propiedadSnapshot in it.children) {
-                    val propiedad_usuario = propiedadSnapshot.getValue(String::class.java)!!
-                    propiedad_lista.add(propiedad_usuario)
+            val propiedad_lista = mutableListOf<String>()
+            if (dataSnapshot.exists()) {
+                for (propiedadSnapshot in dataSnapshot.children) {
+                    val propiedad_usuario = propiedadSnapshot.getValue(String::class.java)
+                    propiedad_usuario?.let { propiedad_lista.add(it) }
                 }
             }
             propiedad_lista.add(reserva.carta_id)
+            refBBDD.child("tienda").child("usuarios").child(reserva.usuario_id).child("propiedad").setValue(propiedad_lista).await()
 
-            refBBDD.child("tienda").child("usuarios").child(reserva.usuario_id).child("propiedad").setValue(propiedad_lista)
+            refBBDD.child("tienda").child("reservas").child(reserva.reserva_id).removeValue().await()
 
-            refBBDD.child("tienda").child("reservas").child(reserva.reserva_id).removeValue()
+            misCartas = propiedad_lista
 
-        }catch (e: Exception){
+        } catch (e: Exception) {
             Log.e("UserError", "Error al guardar la carta : ${e.message}")
             Toast.makeText(context, "Error al guardar la carta : ${e.message}", Toast.LENGTH_SHORT).show()
-        }
-        finally {
+        } finally {
             Toast.makeText(context, "Reserva con ID ${reserva.reserva_id} procesada con éxito", Toast.LENGTH_SHORT).show()
         }
     }
@@ -203,7 +208,7 @@ fun cargaReservasUsuario(
     scopeUser: CoroutineScope,
     onUpdateIsLoading: (Boolean) -> Unit
 ) {
-    onUpdateIsLoading(true) // Start loading
+    onUpdateIsLoading(true)
     scopeUser.launch {
         try {
             refBBDD.child("tienda").child("reservas").get().addOnSuccessListener {
@@ -215,11 +220,10 @@ fun cargaReservasUsuario(
                     }
                     Log.e("ReservasUser", "${reserva.usuario_id} - ${reserva.carta_id}")
                 }
-                reservasCreadas = listaReservas // Update the mutableStateOf variable
-                onUpdateIsLoading(false) // Loading finished successfully
-                //Toast.makeText(context, "Reservas cargadas con éxito", Toast.LENGTH_SHORT).show()
+                reservasCreadas = listaReservas
+                onUpdateIsLoading(false)
             }.addOnFailureListener {
-                onUpdateIsLoading(false) // Loading failed
+                onUpdateIsLoading(false)
                 Log.e("UserError", "Error al cargar las reservas : ${it.message}")
                 Toast.makeText(context, "Error al cargar las reservas : ${it.message}", Toast.LENGTH_SHORT).show()
             }
@@ -235,7 +239,7 @@ fun cargaTodasReservas(
     context: Context,
     scopeUser: CoroutineScope,
     onUpdateIsLoading: (Boolean) -> Unit,
-    onSuccess: () -> Unit // New callback for success
+    onSuccess: () -> Unit
 ) {
     onUpdateIsLoading(true) // Start loading
     scopeUser.launch {

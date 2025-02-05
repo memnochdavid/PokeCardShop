@@ -355,7 +355,7 @@ fun CartaFB(modifier: Modifier = Modifier, carta: Carta, onCartaGrandeChange: (B
                         Boton(
                             text = "Aceptar",
                             onClick = {
-                                aceptaReservaFB(reserva, context, scope)
+                                aceptaReservaFB(reserva, context, scope, misCartas)
                             }
                         )
                     }

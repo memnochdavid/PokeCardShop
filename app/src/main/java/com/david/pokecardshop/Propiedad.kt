@@ -37,8 +37,6 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
 
 var misCartas by mutableStateOf<List<String>>(emptyList())
-
-
 @Composable
 fun MisCartas(modifier: Modifier = Modifier, navController: NavHostController) {
     var onCardClick by remember { mutableStateOf(Carta()) }
