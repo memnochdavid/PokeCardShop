@@ -31,13 +31,17 @@ import androidx.compose.material3.NavigationDrawerItemDefaults
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.graphics.RectangleShape
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import com.david.pokecardshop.CartasCreadas
+import com.david.pokecardshop.MisCartas
 import com.david.pokecardshop.VerListaPokeAPI
+import com.david.pokecardshop.cargaCartasCreadas
 import com.david.pokecardshop.dataclass.CreaCarta
 import com.david.pokecardshop.dataclass.FormularioCarta
 import com.david.pokecardshop.dataclass.Pokemon
@@ -50,34 +54,20 @@ import com.david.pokecardshop.usuario_key
 
 @Composable
 fun Menu(
+    menuItems: List<String>,
     selectedItem: Int,
     onItemSelected: (Int) -> Unit,
-    onCloseDrawer: () -> Unit,
 ) {
-    val sesion = UsuarioFromKey(usuario_key, refBBDD = refBBDD)
-    Log.d("ADMIN_menu", "$sesion")
-    Log.d("usuario_key_menu", usuario_key)
-    val items = if (!sesion.admin) {
-        listOf("Lista", "Cartas Creadas","Reservas","Opciones")
-    } else {
-        listOf("Lista", "Crear Carta", "Cartas Creadas","Reservas", "Opciones")
-    }
-    val selectedColor = blanco80
-    val unselectedColor = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f)
-    val selectedtextColor = negro80
-    val unselectedtextColor = blanco80
-
     ModalDrawerSheet(
-        modifier = Modifier
-            .widthIn(max = 250.dp),
+        modifier = Modifier.widthIn(max = 250.dp),
         drawerShape = RectangleShape,
     ) {
         Column(modifier = Modifier.padding(top = 16.dp)) {
-            items.forEachIndexed { index, item ->
+            menuItems.forEachIndexed { index, item ->
                 NavigationDrawerItem(
                     icon = {
                         when (item) {
-                            "Lista" -> Icon(Icons.AutoMirrored.Filled.List, contentDescription = item)
+                            "MisCartas" -> Icon(Icons.AutoMirrored.Filled.List, contentDescription = item)
                             "Crear Carta" -> Icon(Icons.Filled.Add, contentDescription = item)
                             "Cartas Creadas" -> Icon(Icons.Filled.Face, contentDescription = item)
                             "Reservas" -> Icon(Icons.Filled.Star, contentDescription = item)
@@ -101,7 +91,7 @@ fun Menu(
 }
 
 sealed class Screen(val route: String) {
-    object Lista : Screen("Lista")
+    object MisCartas : Screen("MisCartas")
     object CrearCarta : Screen("CrearCarta")
     object CartasCreadas : Screen("CartasCreadas")
     object Reservas : Screen("Reservas")
@@ -109,12 +99,13 @@ sealed class Screen(val route: String) {
 }
 @Composable
 fun Navigation(navController: NavHostController, modifier: Modifier) {
-    val pokemonList = listaByGen(1)
-    NavHost(navController = navController, startDestination = Screen.Lista.route) {
-        composable(Screen.Lista.route) {
+    //val pokemonList = listaByGen(1)
+    NavHost(navController = navController, startDestination = Screen.MisCartas.route) {
+        composable(Screen.MisCartas.route) {
             PokeCardShopTheme {
                 Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
-                    VerListaPokeAPI(modifier = Modifier.padding(innerPadding), listaApi = pokemonList, navController = navController)
+                    //VerListaPokeAPI(modifier = Modifier.padding(innerPadding), listaApi = pokemonList, navController = navController)
+                    MisCartas(modifier = Modifier.padding(innerPadding), navController = navController)
                 }
             }
         }

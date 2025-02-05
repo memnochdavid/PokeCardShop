@@ -78,7 +78,7 @@ var cartasCreadas by mutableStateOf<List<Carta>>(emptyList())
 var reservasCreadas by mutableStateOf<List<Reserva>>(emptyList())
 
 @Composable
-fun CartaFB(modifier: Modifier = Modifier, carta: Carta, onCartaGrandeChange: (Boolean) -> Unit,navController: NavHostController, isReserva: Boolean = false) {
+fun CartaFB(modifier: Modifier = Modifier, carta: Carta, onCartaGrandeChange: (Boolean) -> Unit,navController: NavHostController, isPropiedad: Boolean = false) {
 
     val numberText = carta.number
     val nameText = carta.nombre
@@ -111,7 +111,7 @@ fun CartaFB(modifier: Modifier = Modifier, carta: Carta, onCartaGrandeChange: (B
     val scope = rememberCoroutineScope()
 
     Card(
-        modifier = modifier.background(Color.Transparent),
+        modifier = Modifier.background(Color.Transparent).fillMaxWidth(0.75f).wrapContentHeight(),
         shape = RoundedCornerShape(15.dp),
         elevation = CardDefaults.cardElevation(defaultElevation = 20.dp),
     ){
@@ -255,9 +255,17 @@ fun CartaFB(modifier: Modifier = Modifier, carta: Carta, onCartaGrandeChange: (B
             }
 
         }
-        Spacer(modifier = Modifier.height(10.dp).background(Color.Transparent))
         Row(
-            modifier = Modifier.fillMaxWidth().background(Color.Transparent),
+            modifier = Modifier
+                .fillMaxWidth()
+                .background(color_tipo_transparente)
+                .drawWithCache {
+                    onDrawWithContent {
+                        drawContent()
+                        drawRect(shimmer)
+                    }
+                    onDrawBehind {drawRect(shimmer)}
+                },
             horizontalArrangement = Arrangement.Center
         ){
             Boton(
@@ -266,9 +274,10 @@ fun CartaFB(modifier: Modifier = Modifier, carta: Carta, onCartaGrandeChange: (B
                     onCartaGrandeChange(false)
                 }
             )
-            //El usuario ve si ha reservado o no la carta
-            if(!sesion.admin){
-                if (carta != null) {
+            if(!isPropiedad){
+
+                //El usuario ve si ha reservado o no la carta
+                if(!sesion.admin){
                     if(carta.carta_id in reservasCreadas.map { it.carta_id }){
                         Boton(
                             text = "Pendiente",
@@ -293,22 +302,22 @@ fun CartaFB(modifier: Modifier = Modifier, carta: Carta, onCartaGrandeChange: (B
                         )
                     }
                 }
-            }
-            //El administrador ve si ha reservado o no la carta
-            else{
-                val reserva = reservasCreadas.find { it.carta_id == carta.carta_id }
+                //El administrador ve si ha reservado o no la carta
+                else{
+                    val reserva = reservasCreadas.find { it.carta_id == carta.carta_id }
 
-                if (reserva != null) {
-                    Boton(
-                        text = "Aceptar",
-                        onClick = {
-                            aceptaReservaFB(reserva, context, scope)
-                        }
-                    )
+                    if (reserva != null) {
+                        Boton(
+                            text = "Aceptar",
+                            onClick = {
+                                aceptaReservaFB(reserva, context, scope)
+                            }
+                        )
+                    }
                 }
             }
         }
-        Spacer(modifier = Modifier.height(10.dp).background(Color.Transparent))
+
     }
 }
 

@@ -80,61 +80,39 @@ fun MainScreen() {
     var selectedItem by remember { mutableIntStateOf(0) }
     val sesion = UsuarioFromKey(usuario_key, refBBDD)
 
-    val currentRoute = when(sesion.admin) {
-        true -> {
-            when (selectedItem) {
-                0 -> Screen.Lista.route
-                1 -> Screen.CrearCarta.route
-                2 -> Screen.CartasCreadas.route
-                3 -> Screen.Reservas.route
-                4 -> Screen.Opciones.route
-                else -> {Screen.Lista.route}
-            }
-        }
-            false -> {
-                when (selectedItem) {
-                    0 -> Screen.Lista.route
-                    1 -> Screen.CartasCreadas.route
-                    2 -> Screen.Reservas.route
-                    3 -> Screen.Opciones.route
-                    else -> Screen.Lista.route
-                }
-            }
-        }
+    // Define menu items based on admin status
+    val menuItems = if (sesion.admin) {
+        listOf("Crear Carta", "Cartas Creadas", "Reservas", "Opciones")
+    } else {
+        listOf("MisCartas", "Cartas Creadas", "Reservas", "Opciones")
+    }
 
-
+    // Map selectedItem to Screen based on admin status
+    val currentRoute = when {
+        sesion.admin && selectedItem == 0 -> Screen.CrearCarta.route
+        sesion.admin && selectedItem == 1 -> Screen.CartasCreadas.route
+        sesion.admin && selectedItem == 2 -> Screen.Reservas.route
+        sesion.admin && selectedItem == 3 -> Screen.Opciones.route
+        !sesion.admin && selectedItem == 0 -> Screen.MisCartas.route
+        !sesion.admin && selectedItem == 1 -> Screen.CartasCreadas.route
+        !sesion.admin && selectedItem == 2 -> Screen.Reservas.route
+        !sesion.admin && selectedItem == 3 -> Screen.Opciones.route
+        else -> Screen.Opciones.route // Default route
+    }
 
     ModalNavigationDrawer(
         drawerState = drawerState,
         drawerContent = {
             Menu(
+                menuItems = menuItems,
                 selectedItem = selectedItem,
                 onItemSelected = { index ->
                     selectedItem = index
-                    when(sesion.admin) {
-                        true -> {
-                            when (selectedItem) {
-                                0 -> Screen.Lista.route
-                                1 -> Screen.CrearCarta.route
-                                2 -> Screen.CartasCreadas.route
-                                3 -> Screen.Opciones.route
-                                else -> {Screen.Lista.route}
-                            }
-                        }
-                        false -> {
-                            when (selectedItem) {
-                                0 -> Screen.Lista.route
-                                1 -> Screen.CartasCreadas.route
-                                3 -> Screen.Opciones.route
-                                else -> Screen.Lista.route // Default to Lista
-                            }
-                        }
-                    }
+                    scope.launch { drawerState.close() } // Close drawer after selection
                 },
-                onCloseDrawer = { scope.launch { drawerState.close() } }
             )
         }
-    ){
+    ) {
         Box {
             Scaffold() { paddingValues ->
                 Navigation(navController = navController, modifier = Modifier.padding(paddingValues))
@@ -149,7 +127,8 @@ fun MainScreen() {
             }
         }
     }
-    // New: Navigate when the current route changes
+
+    // Navigate when the current route changes
     LaunchedEffect(currentRoute) {
         navController.navigate(currentRoute) {
             popUpTo(navController.graph.startDestinationId) {
