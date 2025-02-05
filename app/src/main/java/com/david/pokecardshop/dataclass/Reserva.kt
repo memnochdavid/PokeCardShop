@@ -122,12 +122,10 @@ fun Reservadas(
                 items(reservasCreadas) { reserva ->
                     val carta = cartasCreadas.find { it.carta_id == reserva.carta_id }
                     if (carta != null)
-                        if(carta.carta_id !in sesion.propiedad){
-                            CarPequeFB(carta = carta, onClick = {
-                                cartaGrande = !cartaGrande
-                                onCardClick = carta
-                            })
-                        }
+                        CarPequeFB(carta = carta, onClick = {
+                            cartaGrande = !cartaGrande
+                            onCardClick = carta
+                        })
                 }
             }
             if (cartaGrande) {

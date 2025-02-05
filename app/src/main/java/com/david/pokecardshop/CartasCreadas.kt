@@ -425,6 +425,7 @@ fun CartasCreadas(modifier: Modifier = Modifier, navController: NavHostControlle
     var onCardClick by remember { mutableStateOf(Carta()) }
     var cartaGrande by remember { mutableStateOf(false) }
     var isLoading by remember { mutableStateOf(true) }
+    val sesion = UsuarioFromKey(usuario_key, refBBDD)
 
     cargaCartasCreadas(onUpdateIsLoading = { isLoading = it })
     if (isLoading) { //se asegura de haber cargado los datos de la nube antes de empezar a mostrar nada
@@ -456,10 +457,13 @@ fun CartasCreadas(modifier: Modifier = Modifier, navController: NavHostControlle
                 modifier = Modifier.wrapContentSize()
             ) {
                 items(cartasCreadas) { carta ->
-                    CarPequeFB(carta = carta, onClick = {
-                        cartaGrande = !cartaGrande
-                        onCardClick = carta
-                    })
+
+                    if(carta.carta_id !in misCartas){
+                        CarPequeFB(carta = carta, onClick = {
+                            cartaGrande = !cartaGrande
+                            onCardClick = carta
+                        })
+                    }
                 }
             }
             if (cartaGrande) {
