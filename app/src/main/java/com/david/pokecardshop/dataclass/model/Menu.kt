@@ -43,6 +43,7 @@ import com.david.pokecardshop.CartasCreadas
 import com.david.pokecardshop.MisCartas
 import com.david.pokecardshop.Opciones
 import com.david.pokecardshop.dataclass.CreaCarta
+import com.david.pokecardshop.dataclass.CreaEvento
 import com.david.pokecardshop.dataclass.Reservadas
 import com.david.pokecardshop.ui.theme.*
 
@@ -137,8 +138,7 @@ fun Navigation(navController: NavHostController, modifier: Modifier,onThemeChang
         composable(Screen.Eventos.route) {
             PokeCardShopTheme {
                 Scaffold(modifier = Modifier.fillMaxSize()){ innerPadding ->
-                    //Eventos(modifier = Modifier.padding(innerPadding), navController = navController)
-
+                    CreaEvento(modifier = Modifier.padding(innerPadding), navController = navController)
                 }
             }
         }

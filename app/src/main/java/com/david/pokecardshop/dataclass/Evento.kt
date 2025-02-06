@@ -20,18 +20,28 @@ import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -56,8 +66,6 @@ data class Evento(
     var titulo: String ="",
     var descripcion: String = "",
     var actividades: List<String> = listOf(),
-    var fecha: Date,
-    var imagen: String = "",
 ){
     init{
         evento_id = refBBDD.child("tienda").child("eventos").push().key!!
@@ -73,29 +81,27 @@ data class Inscripcion(
         inscripcion_id = refBBDD.child("tienda").child("inscripciones").push().key!!
     }
 }
-/*
+
 @Composable
 fun CreaEvento(modifier: Modifier = Modifier, navController: NavHostController){
+    val context = LocalContext.current
+    val scopeUser = rememberCoroutineScope()
+    var tituloText by remember { mutableStateOf("Título del evento") }
+    var descText by remember { mutableStateOf("Descripción del evento") }
+    var lista_actividades by remember { mutableStateOf(listOf("")) }
+
     LazyColumn(
         modifier = Modifier
             .fillMaxSize()
-        //.background(color_electrico_dark)
     ) {
         item {
             FormularioEvento(
-                numberText = numberText,
-                nameText = nameText,
-                descText = descText,
-                habilidadText = habilidadText,
-                descHabilidad = descHabilidad,
-                onNumberChange = { numberText = it },
-                onNameChange = { nameText = it },
-                onHabilidadChange = { habilidadText = it },
-                onDescHabilidadChange = { descHabilidad = it },
-                onDescChange = { descText = it },
-                isLoadingDesc = isDescriptionLoading,
-                isLoadingAbility = isAbilityListLoading,
-                isAbilityNameLoading = isAbilityDetailsLoading
+                titulo = tituloText,
+                descripcion = descText,
+                lista_actividades = lista_actividades,
+                onTituloChange = { tituloText = it },
+                onDescripcionChange = { descText = it },
+                onListaActividadesChange = { lista_actividades = it }
             )
         }
         item {
@@ -108,18 +114,13 @@ fun CreaEvento(modifier: Modifier = Modifier, navController: NavHostController){
             ) {
                 CartelEvento(
                     modifier = Modifier
-                        .fillMaxWidth(0.75f)
-                        .wrapContentHeight(),
-                    numberText = numberText,
-                    nameText = nameText,
-                    descText = descText,
-                    selectedImageUri = selectedImageUri,
-                    habilidadText = habilidadText,
-                    descHabilidad = descHabilidad,
-                    tipo = tipo,
-                    isLoadingDesc = isDescriptionLoading,
-                    isLoadingAbility = isAbilityListLoading,
-                    isAbilityNameLoading = isAbilityDetailsLoading
+                        .padding(horizontal = 10.dp),
+                    titulo_evento = tituloText,
+                    descripcion_evento = descText,
+                    lista_actividades = lista_actividades,
+                    onTituloChange = { tituloText = it },
+                    onDescripcionChange = { descText = it },
+                    onListaActividadesChange = { lista_actividades = it }
                 )
             }
         }
@@ -130,27 +131,14 @@ fun CreaEvento(modifier: Modifier = Modifier, navController: NavHostController){
                 horizontalArrangement = Arrangement.SpaceEvenly
             ){
                 Boton(
-                    text = "Auto",
-                    onClick = {
-                        autoSelect = !autoSelect
-                    }
-                )
-                Boton(
                     text = "Guardar",
                     onClick = {
-                        val carta_creada = Carta(
-                            number = numberText,
-                            nombre = nameText,
+                        val cartel_creado = Evento(
+                            titulo = tituloText,
                             descripcion = descText,
-                            imagen = caraImagenURL(nameText),
-                            habilidad_poke = listOf(habilidadText, descHabilidad),
-                            fondo_foto = R.drawable.background_foto,
-                            fondo_carta = TypeToBackground(tipo),
-                            tipo = tipo.type.name,
-                            imagenAPI = selectedImageUri.toString()
-
+                            actividades = lista_actividades
                         )
-                        guardaCartaFB(carta_creada, context, scopeUser)
+                        creaEvento(cartel_creado.titulo, cartel_creado.descripcion, cartel_creado.actividades, context, scopeUser)
                     }
                 )
                 Boton(
@@ -163,18 +151,21 @@ fun CreaEvento(modifier: Modifier = Modifier, navController: NavHostController){
         }
     }
 }
-*/
+
+
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun FormularioEvento(
+    modifier: Modifier = Modifier,
     titulo: String = "Título del evento",
     descripcion: String = "Descripción del evento",
     lista_actividades: List<String> = listOf(""),
     onTituloChange: (String) -> Unit = {},
     onDescripcionChange: (String) -> Unit = {},
     onListaActividadesChange: (List<String>) -> Unit = {}
-){
+) {
     Column(
-        modifier = Modifier
+        modifier = modifier
             .fillMaxWidth()
             .padding(20.dp)
     ) {
@@ -191,41 +182,58 @@ fun FormularioEvento(
             label = { Text("Descripción") },
             modifier = Modifier.fillMaxWidth()
         )
-        Row(
-            modifier = Modifier
-                .fillMaxWidth(),
-            horizontalArrangement = Arrangement.SpaceBetween,
-            verticalAlignment = Alignment.CenterVertically
-        ){
-            OutlinedTextField(
-                value = lista_actividades[0],
-                onValueChange = { onListaActividadesChange(listOf(it)) },
-                label = { Text("Nueva actividad") },
-                modifier = Modifier.fillMaxWidth(0.5f)
-            )
-            Boton(
-                text = "Añadir",
-                onClick = {
-                    onListaActividadesChange(lista_actividades + listOf(lista_actividades[0]))
+        Spacer(modifier = Modifier.height(8.dp))
+        // Display all activities
+        Column(modifier = Modifier.fillMaxWidth()){
+            lista_actividades.forEachIndexed{ index, actividad ->
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    OutlinedTextField(
+                        value = actividad,
+                        onValueChange = { newValue ->
+                            val newList = lista_actividades.toMutableList()
+                            newList[index] = newValue
+                            onListaActividadesChange(newList)
+                        },
+                        label = { Text("Actividad ${index + 1}") },
+                        modifier = Modifier.fillMaxWidth(0.8f)
+                    )
                 }
-            )
+            }
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Boton(
+                    text = "Añadir",
+                    onClick = {
+                        onListaActividadesChange(lista_actividades + "")
+                    }
+                )
+            }
         }
     }
 }
-
-
 
 @Composable
 fun CartelEvento(
     modifier: Modifier = Modifier,
     titulo_evento: String = "Título del evento",
     descripcion_evento: String = "Descripción del evento",
-    lista_actividades: List<String> = listOf("Actividad 1", "Actividad 2", "Actividad 3")
-){
+    lista_actividades: List<String> = listOf(""),
+    onTituloChange: (String) -> Unit,
+    onDescripcionChange: (String) -> Unit,
+    onListaActividadesChange: (List<String>) -> Unit
+) {
     Card(
+        modifier = modifier.fillMaxSize(),
         shape = RoundedCornerShape(0.dp),
         elevation = CardDefaults.cardElevation(defaultElevation = 20.dp),
-    ){
+    ) {
         ConstraintLayout(
             modifier = Modifier
                 .fillMaxSize()
@@ -233,8 +241,8 @@ fun CartelEvento(
         ) {
             val (logo, titulo, datos, actividades, sponsors) = createRefs()
             Image(
-                painter = painterResource(R.drawable.pokemonlogo)
-                , contentDescription = "Logo",
+                painter = painterResource(R.drawable.pokemonlogo),
+                contentDescription = "Logo",
                 contentScale = ContentScale.FillWidth,
                 modifier = Modifier
                     .constrainAs(logo) {
@@ -243,11 +251,14 @@ fun CartelEvento(
                         end.linkTo(parent.end, margin = 20.dp)
                     }
             )
-            Text(
-                text = titulo_evento,
-                fontSize = 30.sp,
-                color = Color.Red,
-                fontWeight = FontWeight.Bold,
+            BasicTextField(
+                value = titulo_evento,
+                onValueChange = onTituloChange,
+                textStyle = TextStyle(
+                    fontSize = 30.sp,
+                    color = Color.Red,
+                    fontWeight = FontWeight.Bold
+                ),
                 modifier = Modifier
                     .constrainAs(titulo) {
                         top.linkTo(logo.bottom, margin = 10.dp)
@@ -264,48 +275,60 @@ fun CartelEvento(
                         end.linkTo(parent.end, margin = 20.dp)
                     },
                 horizontalArrangement = Arrangement.SpaceEvenly
-            ){
+            ) {
                 Image(
-                    painter = painterResource(R.drawable.charizard)
-                    , contentDescription = "imagen_izq",
+                    painter = painterResource(R.drawable.charizard),
+                    contentDescription = "imagen_izq",
                     contentScale = ContentScale.Crop,
                     modifier = Modifier
                         .size(100.dp)
                 )
-                Text(
-                    text = descripcion_evento,
-                    fontSize = 30.sp,
-                    color = Color.Red,
-                    fontWeight = FontWeight.Bold,
+                BasicTextField(
+                    value = descripcion_evento,
+                    onValueChange = onDescripcionChange,
+                    textStyle = TextStyle(
+                        fontSize = 30.sp,
+                        color = Color.Red,
+                        fontWeight = FontWeight.Bold
+                    ),
                 )
                 Image(
-                    painter = painterResource(R.drawable.pikachu_cartel)
-                    , contentDescription = "imagen_izq",
+                    painter = painterResource(R.drawable.pikachu_cartel),
+                    contentDescription = "imagen_izq",
                     contentScale = ContentScale.Crop,
                     modifier = Modifier
                         .size(100.dp)
                 )
             }
-            Row(
+            Column( // Changed from LazyColumn to Column
                 modifier = Modifier
                     .fillMaxWidth()
-                    .wrapContentHeight()
                     .constrainAs(actividades) {
                         top.linkTo(datos.bottom, margin = 10.dp)
                         start.linkTo(parent.start, margin = 20.dp)
                         end.linkTo(parent.end, margin = 20.dp)
                     },
-                horizontalArrangement = Arrangement.Center
-            ){
-                lista_actividades.forEach(
-                    action = {
-                        Text(
-                            text = it,
-                            fontSize = 20.sp,
-                            color = Color.Black,
-                            fontWeight = FontWeight.Bold,
+                horizontalAlignment = Alignment.CenterHorizontally
+            ) {
+                lista_actividades.forEachIndexed { index, actividad ->
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.Center
+                    ) {
+                        BasicTextField(
+                            value = actividad,
+                            onValueChange = { newValue ->
+                                val newList = lista_actividades.toMutableList()
+                                newList[index] = newValue
+                                onListaActividadesChange(newList)
+                            },
+                            textStyle = TextStyle(
+                                fontSize = 20.sp,
+                                color = Color.Black,
+                                fontWeight = FontWeight.Bold
+                            ),
                         )
-                        if (it != lista_actividades.last()){
+                        if (index < lista_actividades.size - 1) {
                             Text(
                                 text = " - ",
                                 fontSize = 20.sp,
@@ -314,7 +337,7 @@ fun CartelEvento(
                             )
                         }
                     }
-                )
+                }
             }
             Row(
                 modifier = Modifier
@@ -328,24 +351,24 @@ fun CartelEvento(
                     },
                 horizontalArrangement = Arrangement.SpaceEvenly,
                 verticalAlignment = Alignment.CenterVertically
-            ){
+            ) {
                 Image(
-                    painter = painterResource(R.drawable.pokeball_icon)
-                    , contentDescription = "imagen_izq",
+                    painter = painterResource(R.drawable.pokeball_icon),
+                    contentDescription = "imagen_izq",
                     contentScale = ContentScale.Crop,
                     modifier = Modifier
                         .size(80.dp)
                 )
                 Image(
-                    painter = painterResource(R.drawable.icon)
-                    , contentDescription = "imagen_izq",
+                    painter = painterResource(R.drawable.icon),
+                    contentDescription = "imagen_izq",
                     contentScale = ContentScale.Crop,
                     modifier = Modifier
                         .size(100.dp)
                 )
                 Image(
-                    painter = painterResource(R.drawable.logo_escuela)
-                    , contentDescription = "imagen_izq",
+                    painter = painterResource(R.drawable.logo_escuela),
+                    contentDescription = "imagen_izq",
                     contentScale = ContentScale.Inside,
                     modifier = Modifier
                         .size(100.dp)
@@ -367,17 +390,14 @@ fun CartelEvento(
 
 
 
-
 fun creaEvento(
     titulo: String,
     descripcion: String,
     actividades: List<String>,
-    fecha: Date,
-    imagen: String,
     context: Context,
     scopeUser: CoroutineScope
 ) {
-    val evento = Evento(titulo = titulo, descripcion = descripcion, actividades = actividades,fecha = fecha, imagen = imagen)
+    val evento = Evento(titulo = titulo, descripcion = descripcion, actividades = actividades)
 
     scopeUser.launch {
         try {
@@ -437,8 +457,10 @@ fun creaInscripcion(
     }
 }
 
-@Preview (showBackground = true, widthDp = 500, heightDp = 600)
+@Preview (showBackground = true, widthDp = 500, heightDp = 800)
 @Composable
 fun GreetingPreview() {
-    FormularioEvento()
+    val context = LocalContext.current
+    val navController = NavHostController(context)
+    CreaEvento(navController = navController)
 }
