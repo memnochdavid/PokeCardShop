@@ -3,9 +3,16 @@ package com.david.pokecardshop.dataclass
 import android.content.Context
 import android.util.Log
 import android.widget.Toast
+import androidx.compose.animation.core.Spring
+import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.core.spring
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.gestures.detectTapGestures
+import androidx.compose.foundation.indication
+import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -14,18 +21,25 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.sizeIn
+import androidx.compose.foundation.layout.systemBarsPadding
 import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.grid.GridCells
+import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
+import androidx.compose.foundation.lazy.grid.items
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -39,10 +53,14 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.scale
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.graphics.RectangleShape
+import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
@@ -54,16 +72,26 @@ import androidx.compose.ui.zIndex
 import androidx.constraintlayout.compose.ConstraintLayout
 import androidx.constraintlayout.compose.Dimension
 import androidx.navigation.NavHostController
+import coil.compose.rememberAsyncImagePainter
+import com.david.pokecardshop.CarPequeFB
+import com.david.pokecardshop.CartaFB
 import com.david.pokecardshop.R
+import com.david.pokecardshop.cargaCartasCreadas
+import com.david.pokecardshop.cartasCreadas
+import com.david.pokecardshop.misCartas
 import com.david.pokecardshop.refBBDD
 import com.david.pokecardshop.ui.stuff.Boton
 import com.david.pokecardshop.ui.theme.*
+import com.david.pokecardshop.usuario_key
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.tasks.await
 import java.util.Date
 import kotlin.collections.getValue
 import kotlin.io.path.exists
+
+var eventosCreados by mutableStateOf<List<Evento>>(emptyList())
+var misEventos by mutableStateOf<List<String>>(emptyList())
 
 data class Evento(
     var evento_id: String = "",
@@ -87,7 +115,10 @@ data class Inscripcion(
 }
 
 @Composable
-fun CreaEvento(modifier: Modifier = Modifier, navController: NavHostController) {
+fun CreaEvento(
+    modifier: Modifier = Modifier,
+    navController: NavHostController
+) {
     val context = LocalContext.current
     val scopeUser = rememberCoroutineScope()
     var tituloText by remember { mutableStateOf("Título del evento") }
@@ -395,15 +426,165 @@ fun CartelEvento(
     }
 }
 
+@Composable
+fun EventoPeque(
+    modifier: Modifier = Modifier,
+    evento: Evento = Evento()
+){
+    var isPressed by remember { mutableStateOf(false) }
+    var click by remember { mutableStateOf(false) }
+    val interactionSource = remember { MutableInteractionSource() }
+    val scale = animateFloatAsState(
+        targetValue = if (isPressed) 0.90f else 1f,
+        animationSpec = spring(
+            dampingRatio = Spring.DampingRatioMediumBouncy, // Moderate bouncing
+            stiffness = Spring.StiffnessMedium // Moderate stiffness
+        ), label = ""
+    )
+    Card(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = 16.dp, vertical = 8.dp)
+            .scale(scale.value)
+            .clickable(
+                interactionSource = interactionSource,
+                indication = null,
+
+                onClick = {
+
+                }
+            )
+            .indication(
+                interactionSource = interactionSource,
+                indication = null
+            )
+            .pointerInput(Unit) {//lo que hace al pulsar en el Card()
+                detectTapGestures(
+                    onPress = {
+                        isPressed = true
+                        try {
+                            awaitRelease()
+                        } finally {
+                            isPressed = false // Reset isPressed in finally block
+                        }
+                        click = !click
+
+                    }
+                )
+            },
+        shape = RoundedCornerShape(5.dp)
+    ){
+        ConstraintLayout(
+            modifier = Modifier
+                .fillMaxWidth()
+                .border(5.dp, verde40, RectangleShape)
+                .background(verde40)
+        ){
+            val (logo, nombre, imagen) = createRefs()
+            val imagen_evento = rememberAsyncImagePainter(
+                model = R.drawable.logo_evento,
+                contentScale = ContentScale.FillBounds,
+            )
+            val backgroundImage = painterResource(R.drawable.evento_background)
+            Image(
+                modifier = Modifier
+                    .constrainAs(imagen){
+                        start.linkTo(parent.start)
+                        top.linkTo(parent.top)
+                        bottom.linkTo(parent.bottom)
+                        //end.linkTo(nombre.start)
+                    }
+                    .size(100.dp),
+                painter = backgroundImage,
+                contentDescription = "Background Imagen",
+                contentScale = ContentScale.Crop // Adjust as needed
+            )
+            Image(
+                painter = imagen_evento,
+                contentDescription = "Evento Imagen",
+                modifier = Modifier
+                    .size(100.dp)
+                    .fillMaxSize()
+                    .constrainAs(imagen) {
+                        start.linkTo(parent.start)
+                        top.linkTo(parent.top)
+                        bottom.linkTo(parent.bottom)
+                        //end.linkTo(nombre.start)
+                    }
+                    .background(Color.White.copy(alpha = 0.3f))
+            )
+            Text(
+                text = evento.titulo,
+                color = Color.Black,
+                fontSize = 15.sp,
+                fontWeight = FontWeight.Bold,
+                modifier = Modifier
+                    .constrainAs(nombre) {
+                        start.linkTo(imagen.end)
+                        top.linkTo(parent.top)
+                        bottom.linkTo(parent.bottom)
+                        end.linkTo(parent.end)
+                    }
+            )
+        }
+
+    }
+}
 
 
+@Composable
+fun EventosCreados(
+    modifier: Modifier = Modifier,
+    navController: NavHostController
+){
+    var onEventoClick by remember { mutableStateOf(Evento()) }
+    var eventoGrande by remember { mutableStateOf(false) }
+    var isLoading by remember { mutableStateOf(true) }
+    //val sesion = UsuarioFromKey(usuario_key, refBBDD)
 
+    cargaEventosCreados(onUpdateIsLoading = { isLoading = it })
 
+    if (isLoading) { //se asegura de haber cargado los datos de la nube antes de empezar a mostrar nada
+        Box(
+            modifier = modifier
+                .background(color_fuego_dark)
+                .fillMaxSize(),
+            contentAlignment = Alignment.Center
+        ) {
+            CircularProgressIndicator(
+                color = colorResource(R.color.white),
+                strokeWidth = 10.dp,
+                modifier = Modifier.size(100.dp)
+            )
+        }
+    }
+    else{
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .background(color_fuego_dark)
+                .padding(top = 0.dp) // Apply padding to the Box
+                .systemBarsPadding()
+                .imePadding(),
+            contentAlignment = Alignment.Center,
+        ) {
+            LazyColumn(
+                modifier = Modifier
+                    .fillMaxSize()
+            ) {
+                items(eventosCreados) { evento ->
 
-
-
-
-
+                    if(evento.evento_id !in misEventos){
+                        EventoPeque(evento = evento)
+                    }
+                }
+            }
+            if (eventoGrande) {
+                //meustra evento_grande
+            }
+        }
+    }
+}
 
 
 
@@ -474,10 +655,26 @@ fun creaInscripcion(
     }
 }
 
+
+fun cargaEventosCreados(
+    onUpdateIsLoading: (Boolean) -> Unit
+){
+    refBBDD.child("tienda").child("eventos").get().addOnSuccessListener { dataSnapshot ->
+        val listaEvento = mutableListOf<Evento>()
+        for (childSnapshot in dataSnapshot.children) {
+            val evento = childSnapshot.getValue(Evento::class.java)
+            evento?.let { listaEvento.add(it) }
+        }
+        eventosCreados = listaEvento
+        onUpdateIsLoading(false)
+    }.addOnFailureListener { exception ->
+        onUpdateIsLoading(false)
+    }
+}
+
+
 @Preview (showBackground = true, widthDp = 500, heightDp = 900)
 @Composable
 fun GreetingPreview() {
-    val context = LocalContext.current
-    val navController = NavHostController(context)
-    CreaEvento(navController = navController)
+    EventoPeque()
 }

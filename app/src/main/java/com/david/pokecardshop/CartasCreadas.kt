@@ -396,7 +396,7 @@ fun CarPequeFB(carta: Carta, onClick: () -> Unit){
         animationSpec = spring(
             dampingRatio = Spring.DampingRatioMediumBouncy, // Moderate bouncing
             stiffness = Spring.StiffnessMedium // Moderate stiffness
-        )
+        ), label = ""
     )
     val color_tipo = TypeStringToColor(carta.tipo,1)
     Card(

@@ -44,6 +44,7 @@ import com.david.pokecardshop.MisCartas
 import com.david.pokecardshop.Opciones
 import com.david.pokecardshop.dataclass.CreaCarta
 import com.david.pokecardshop.dataclass.CreaEvento
+import com.david.pokecardshop.dataclass.EventosCreados
 import com.david.pokecardshop.dataclass.Reservadas
 import com.david.pokecardshop.ui.theme.*
 
@@ -66,7 +67,8 @@ fun Menu(
                             "Crear Carta" -> Icon(Icons.Filled.Add, contentDescription = item)
                             "Cartas Creadas" -> Icon(Icons.Filled.Face, contentDescription = item)
                             "Reservas" -> Icon(Icons.Filled.Star, contentDescription = item)
-                            "Eventos" -> Icon(Icons.Filled.DateRange, contentDescription = item)
+                            "Crear Evento" -> Icon(Icons.Filled.DateRange, contentDescription = item)
+                            "Eventos Creados" -> Icon(Icons.Filled.Email, contentDescription = item)
                             "Opciones" -> Icon(Icons.Filled.Settings, contentDescription = item)
                             else -> Icon(Icons.AutoMirrored.Filled.List, contentDescription = item)
                         }
@@ -91,7 +93,8 @@ sealed class Screen(val route: String) {
     object CrearCarta : Screen("CrearCarta")
     object CartasCreadas : Screen("CartasCreadas")
     object Reservas : Screen("Reservas")
-    object Eventos : Screen("Eventos")
+    object CrearEventos : Screen("Crear Evento")
+    object EventosCreados : Screen("Eventos Creados")
     object Opciones : Screen("Opciones")
 }
 @Composable
@@ -135,13 +138,21 @@ fun Navigation(navController: NavHostController, modifier: Modifier,onThemeChang
                 }
             }
         }
-        composable(Screen.Eventos.route) {
+        composable(Screen.CrearEventos.route) {
             PokeCardShopTheme {
                 Scaffold(modifier = Modifier.fillMaxSize()){ innerPadding ->
                     CreaEvento(modifier = Modifier.padding(innerPadding), navController = navController)
                 }
             }
         }
+        composable(Screen.EventosCreados.route) {
+            PokeCardShopTheme {
+                Scaffold(modifier = Modifier.fillMaxSize()){ innerPadding ->
+                    EventosCreados(modifier = Modifier.padding(innerPadding), navController = navController)
+                }
+            }
+        }
+
 
     }
 }
