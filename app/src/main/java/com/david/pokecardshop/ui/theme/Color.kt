@@ -40,6 +40,7 @@ val azul60 = Color(0xFF4C4CE5)
 val azul40 = Color(0xFF292991)
 val azul20 = Color(0xFF14145A)
 
+val color_fonto_cartel = Color(0xFFD8F4FD)
 
 //colores para los tipos de lo pokémon
 

@@ -11,6 +11,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.List
 import androidx.compose.material.icons.filled.AccountBox
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.DateRange
 import androidx.compose.material.icons.filled.Email
 import androidx.compose.material.icons.filled.Face
 import androidx.compose.material.icons.filled.Person
@@ -64,6 +65,7 @@ fun Menu(
                             "Crear Carta" -> Icon(Icons.Filled.Add, contentDescription = item)
                             "Cartas Creadas" -> Icon(Icons.Filled.Face, contentDescription = item)
                             "Reservas" -> Icon(Icons.Filled.Star, contentDescription = item)
+                            "Eventos" -> Icon(Icons.Filled.DateRange, contentDescription = item)
                             "Opciones" -> Icon(Icons.Filled.Settings, contentDescription = item)
                             else -> Icon(Icons.AutoMirrored.Filled.List, contentDescription = item)
                         }
@@ -88,6 +90,7 @@ sealed class Screen(val route: String) {
     object CrearCarta : Screen("CrearCarta")
     object CartasCreadas : Screen("CartasCreadas")
     object Reservas : Screen("Reservas")
+    object Eventos : Screen("Eventos")
     object Opciones : Screen("Opciones")
 }
 @Composable
@@ -128,6 +131,14 @@ fun Navigation(navController: NavHostController, modifier: Modifier,onThemeChang
             PokeCardShopTheme {
                 Scaffold(modifier = Modifier.fillMaxSize()){ innerPadding ->
                     Reservadas(modifier = Modifier.padding(innerPadding), navController = navController)
+                }
+            }
+        }
+        composable(Screen.Eventos.route) {
+            PokeCardShopTheme {
+                Scaffold(modifier = Modifier.fillMaxSize()){ innerPadding ->
+                    //Eventos(modifier = Modifier.padding(innerPadding), navController = navController)
+
                 }
             }
         }
