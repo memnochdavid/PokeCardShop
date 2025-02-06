@@ -45,6 +45,7 @@ import com.david.pokecardshop.Opciones
 import com.david.pokecardshop.dataclass.CreaCarta
 import com.david.pokecardshop.dataclass.CreaEvento
 import com.david.pokecardshop.dataclass.EventosCreados
+import com.david.pokecardshop.dataclass.MisEventos
 import com.david.pokecardshop.dataclass.Reservadas
 import com.david.pokecardshop.ui.theme.*
 
@@ -96,6 +97,7 @@ sealed class Screen(val route: String) {
     object Reservas : Screen("Reservas")
     object CrearEventos : Screen("Crear Evento")
     object EventosCreados : Screen("Eventos Creados")
+    object MisEventos : Screen("Mis Eventos")
     object Opciones : Screen("Opciones")
 }
 @Composable
@@ -153,7 +155,15 @@ fun Navigation(navController: NavHostController, modifier: Modifier,onThemeChang
                 }
             }
         }
-
-
+        composable(Screen.MisEventos.route) {
+            PokeCardShopTheme {
+                Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
+                    MisEventos(
+                        modifier = Modifier.padding(innerPadding),
+                        navController = navController
+                    )
+                }
+            }
+        }
     }
 }

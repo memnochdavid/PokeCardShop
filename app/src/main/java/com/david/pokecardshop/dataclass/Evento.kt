@@ -816,7 +816,10 @@ fun MisEventos(
     var eventoSeleccionado by remember { mutableStateOf<Evento?>(null) }
     var isLoading by remember { mutableStateOf(true) }
 
-    cargaMisEventos( onUpdateIsLoading = { isLoading = it })
+    cargaEventosCreados( onUpdateIsLoading = { isLoading = it })
+    cargaMisEventos(onUpdateIsLoading = { isLoading = it })
+
+
 
     if (isLoading) { //se asegura de haber cargado los datos de la nube antes de empezar a mostrar nada
         Box(
@@ -833,6 +836,7 @@ fun MisEventos(
         }
     }
     else{
+
         Box(
             modifier = Modifier
                 .fillMaxSize()
@@ -846,7 +850,8 @@ fun MisEventos(
                 modifier = Modifier
                     .fillMaxSize()
             ) {
-                items(eventosCreados, key = { it.evento_id }) { evento ->
+                val eventosFiltrados = eventosCreados.filter { it.evento_id in misEventos }
+                items(eventosFiltrados) { evento ->
                     EventoPeque(
                         evento = evento,
                         onEventoClick = {
@@ -999,18 +1004,24 @@ fun cargaEventosCreados(
 
 fun cargaMisEventos(
     onUpdateIsLoading: (Boolean) -> Unit
-){
-    refBBDD.child("tienda").child("inscripciones").orderByChild("inscritos").equalTo(usuario_key).get().addOnSuccessListener { dataSnapshot ->
-        val listaEvento = mutableListOf<String>()
-        for (childSnapshot in dataSnapshot.children) {
-            val inscripcion = childSnapshot.getValue(Inscripcion::class.java)
-            inscripcion?.let { listaEvento.add(it.evento_id) }
+) {
+    refBBDD.child("tienda").child("inscripciones").get().addOnSuccessListener { dataSnapshot ->
+        val listaEventos = mutableListOf<String>()
+        for (inscripcionSnapshot in dataSnapshot.children) {
+            val inscripcion = inscripcionSnapshot.getValue(Inscripcion::class.java)
+            if (inscripcion != null && inscripcion.inscritos.contains(usuario_key)) {
+                listaEventos.add(inscripcion.evento_id)
+            }
         }
-        misEventos = listaEvento
+        misEventos = listaEventos
         onUpdateIsLoading(false)
     }.addOnFailureListener { exception ->
         onUpdateIsLoading(false)
     }
+}
+
+fun eventoFromID(evento_id: String): Evento? {
+    return eventosCreados.find { it.evento_id == evento_id }
 }
 
 //@Preview (showBackground = true, widthDp = 500, heightDp = 900)

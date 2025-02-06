@@ -96,7 +96,7 @@ fun MainScreen(onThemeChange: (Boolean) -> Unit) {
     val menuItems = if (sesion.admin) {
         listOf("Crear Carta", "Cartas Creadas", "Reservas", "Crear Eventos", "Eventos Creados","Opciones")
     } else {
-        listOf("MisCartas", "Cartas Creadas", "Reservas", "Eventos Creados", "Opciones")
+        listOf("MisCartas", "Cartas Creadas", "Reservas", "Eventos Creados", "Mis Eventos","Opciones")
     }
 
     // Map selectedItem to Screen based on admin status
@@ -111,7 +111,8 @@ fun MainScreen(onThemeChange: (Boolean) -> Unit) {
         !sesion.admin && selectedItem == 1 -> Screen.CartasCreadas.route
         !sesion.admin && selectedItem == 2 -> Screen.Reservas.route
         !sesion.admin && selectedItem == 3 -> Screen.EventosCreados.route
-        !sesion.admin && selectedItem == 4 -> Screen.Opciones.route
+        !sesion.admin && selectedItem == 4 -> Screen.MisEventos.route
+        !sesion.admin && selectedItem == 5 -> Screen.Opciones.route
         else -> Screen.Reservas.route
     }
 
