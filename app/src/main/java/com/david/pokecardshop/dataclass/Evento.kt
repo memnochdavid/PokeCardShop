@@ -18,6 +18,7 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -46,6 +47,7 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -92,6 +94,7 @@ import kotlin.io.path.exists
 
 var eventosCreados by mutableStateOf<List<Evento>>(emptyList())
 var misEventos by mutableStateOf<List<String>>(emptyList())
+var inscripcionesCreadas by mutableStateOf<List<Inscripcion>>(emptyList())
 
 data class Evento(
     var evento_id: String = "",
@@ -429,7 +432,8 @@ fun CartelEvento(
 @Composable
 fun EventoPeque(
     modifier: Modifier = Modifier,
-    evento: Evento = Evento()
+    evento: Evento = Evento(),
+    onEventoClick: () -> Unit = {}
 ){
     var isPressed by remember { mutableStateOf(false) }
     var click by remember { mutableStateOf(false) }
@@ -468,6 +472,7 @@ fun EventoPeque(
                             isPressed = false // Reset isPressed in finally block
                         }
                         click = !click
+                        onEventoClick()
 
                     }
                 )
@@ -531,6 +536,189 @@ fun EventoPeque(
     }
 }
 
+@Composable
+fun EventoGrande(
+    modifier: Modifier = Modifier,
+    evento: Evento = Evento(),
+    onEventoClick: () -> Unit = {}
+){
+    val context = LocalContext.current
+    val scope = rememberCoroutineScope()
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .background(Color.Transparent)
+            .padding(top = 0.dp),
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.Center
+    ){
+        Card(
+            modifier = modifier.fillMaxSize(0.8f),
+            shape = RoundedCornerShape(0.dp),
+            elevation = CardDefaults.cardElevation(defaultElevation = 20.dp),
+        ) {
+            ConstraintLayout(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .background(color_fonto_cartel)
+            ) {
+                val (logo, titulo, datos, actividades, sponsors) = createRefs()
+                Image(
+                    painter = painterResource(R.drawable.pokemonlogo),
+                    contentDescription = "Logo",
+                    contentScale = ContentScale.FillWidth,
+                    modifier = Modifier
+                        .constrainAs(logo) {
+                            top.linkTo(parent.top, margin = 10.dp)
+                            start.linkTo(parent.start, margin = 20.dp)
+                            end.linkTo(parent.end, margin = 20.dp)
+                        }
+                )
+                Text(
+                    text = evento.titulo,
+                    color = Color.Red,
+                    fontSize = 30.sp,
+                    fontWeight = FontWeight.Bold,
+                    modifier = Modifier
+                        .constrainAs(titulo) {
+                            top.linkTo(logo.bottom, margin = 10.dp)
+                            start.linkTo(parent.start, margin = 10.dp)
+                            end.linkTo(parent.end, margin = 10.dp)
+                        }
+                )
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .constrainAs(datos) {
+                            top.linkTo(titulo.bottom, margin = 10.dp)
+                            start.linkTo(parent.start, margin = 20.dp)
+                            end.linkTo(parent.end, margin = 20.dp)
+                        },
+                    horizontalArrangement = Arrangement.SpaceEvenly
+                ) {
+                    Image(
+                        painter = painterResource(R.drawable.charizard),
+                        contentDescription = "imagen_izq",
+                        contentScale = ContentScale.Inside,
+                        modifier = Modifier
+                            .size(100.dp)
+                    )
+                    Text(
+                        text = evento.descripcion,
+                        fontSize = 30.sp,
+                        color = Color.Red,
+                        textAlign = TextAlign.Center,
+                        fontWeight = FontWeight.Bold,
+                        modifier = Modifier.fillMaxWidth(0.7f),
+                    )
+                    Image(
+                        painter = painterResource(R.drawable.pikachu_cartel),
+                        contentDescription = "imagen_izq",
+                        contentScale = ContentScale.Inside,
+                        modifier = Modifier
+                            .size(100.dp)
+                    )
+                }
+                Column( // Changed from LazyColumn to Column
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .constrainAs(actividades) {
+                            top.linkTo(datos.bottom, margin = 10.dp)
+                            start.linkTo(parent.start, margin = 20.dp)
+                            end.linkTo(parent.end, margin = 20.dp)
+                        },
+                    horizontalAlignment = Alignment.CenterHorizontally
+                ) {
+                    evento.actividades.forEachIndexed { index, actividad ->
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(vertical = 5.dp, horizontal = 10.dp),
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.Center
+                        ) {
+                            Text(
+                                text = actividad,
+                                fontSize = 20.sp,
+                                color = Color.Black,
+                                textAlign = TextAlign.Center,
+                                fontWeight = FontWeight.Bold
+                            )
+                            if (index < evento.actividades.size - 1) {
+                                Text(
+                                    text = " - ",
+                                    fontSize = 20.sp,
+                                    color = Color.Black,
+                                    fontWeight = FontWeight.Bold
+                                )
+                            }
+                        }
+                    }
+                }
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .wrapContentHeight()
+                        .constrainAs(sponsors) {
+                            top.linkTo(actividades.bottom, margin = 10.dp)
+                            start.linkTo(parent.start, margin = 20.dp)
+                            end.linkTo(parent.end, margin = 20.dp)
+                            bottom.linkTo(parent.bottom, margin = 10.dp)
+                        },
+                    horizontalArrangement = Arrangement.SpaceEvenly,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Image(
+                        painter = painterResource(R.drawable.pokeball_icon),
+                        contentDescription = "imagen_izq",
+                        contentScale = ContentScale.Crop,
+                        modifier = Modifier
+                            .size(80.dp)
+                    )
+                    Image(
+                        painter = painterResource(R.drawable.icon),
+                        contentDescription = "imagen_izq",
+                        contentScale = ContentScale.Crop,
+                        modifier = Modifier
+                            .size(100.dp)
+                    )
+                    Image(
+                        painter = painterResource(R.drawable.logo_escuela),
+                        contentDescription = "imagen_izq",
+                        contentScale = ContentScale.Inside,
+                        modifier = Modifier
+                            .size(100.dp)
+                    )
+                }
+            }
+        }
+        Spacer(modifier = Modifier
+            .height(15.dp)
+            .background(Color.Transparent))
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .background(Color.Transparent),
+            horizontalArrangement = Arrangement.SpaceEvenly
+        ) {
+            Boton(
+                text = "Atrás",
+                onClick = {
+                    onEventoClick()
+                }
+            )
+            val usuarioInscrito = inscripcionesCreadas.flatMap { it.inscritos }.any { it == usuario_key }
+            if (!usuarioInscrito) {
+                Boton(
+                    text = "Apúntate!",
+                    onClick = {
+                        creaInscripcion( evento_id = evento.evento_id, nuevo_inscrito = usuario_key, context = context, scopeUser = scope)
+                    }
+                )
+            }
+        }
+    }
+}
 
 @Composable
 fun EventosCreados(
@@ -543,6 +731,10 @@ fun EventosCreados(
     //val sesion = UsuarioFromKey(usuario_key, refBBDD)
 
     cargaEventosCreados(onUpdateIsLoading = { isLoading = it })
+
+    LaunchedEffect(key1 = onEventoClick) {
+        cargaInscripcionesEvento(evento_id = onEventoClick.evento_id, onUpdateIsLoading = { isLoading = it })
+    }
 
     if (isLoading) { //se asegura de haber cargado los datos de la nube antes de empezar a mostrar nada
         Box(
@@ -575,12 +767,14 @@ fun EventosCreados(
                 items(eventosCreados) { evento ->
 
                     if(evento.evento_id !in misEventos){
-                        EventoPeque(evento = evento)
+                        onEventoClick = evento
+                        EventoPeque(evento = evento, onEventoClick = {eventoGrande = !eventoGrande})
                     }
                 }
             }
             if (eventoGrande) {
                 //meustra evento_grande
+                EventoGrande(evento = onEventoClick, onEventoClick = {eventoGrande = !eventoGrande})
             }
         }
     }
@@ -615,43 +809,25 @@ fun creaInscripcion(
     context: Context,
     scopeUser: CoroutineScope
 ) {
-    scopeUser.launch {
-        try {
-            // Check if the event exists
-            val eventoRef = refBBDD.child("tienda").child("eventos").child(evento_id)
-            val eventoSnapshot = eventoRef.get().await()
+    //TODO()
+}
 
-            if (!eventoSnapshot.exists()) {
-                // Event does not exist, show an error and return
-                Toast.makeText(context, "El evento no existe", Toast.LENGTH_SHORT).show()
-                return@launch
+fun cargaInscripcionesEvento(
+    evento_id: String,
+    onUpdateIsLoading: (Boolean) -> Unit
+){
+    refBBDD.child("tienda").child("inscripciones").get().addOnSuccessListener { dataSnapshot ->
+        val listaInscripcion = mutableListOf<Inscripcion>()
+        for (childSnapshot in dataSnapshot.children) {
+            if (childSnapshot.child("evento_id").value == evento_id) {
+                val inscripcion = childSnapshot.getValue(Inscripcion::class.java)
+                inscripcion?.let { listaInscripcion.add(it) }
             }
-
-            // Get the current inscripcion or create a new one
-            val inscripcionRef = refBBDD.child("tienda").child("inscripciones").orderByChild("evento_id").equalTo(evento_id)
-            val snapshot = inscripcionRef.get().await()
-            var inscripcion: Inscripcion? = null
-            if (snapshot.exists()) {
-                for (childSnapshot in snapshot.children) {
-                    inscripcion = childSnapshot.getValue(Inscripcion::class.java)
-                    break
-                }
-            }
-            if (inscripcion == null) {
-                inscripcion = Inscripcion(evento_id = evento_id, inscritos = listOf(nuevo_inscrito))
-            } else {
-                val inscritos = inscripcion.inscritos.toMutableList()
-                inscritos.add(nuevo_inscrito)
-                inscripcion.inscritos = inscritos.toList()
-            }
-
-            // Save the inscripcion
-            refBBDD.child("tienda").child("inscripciones").child(inscripcion.inscripcion_id).setValue(inscripcion)
-            Toast.makeText(context, "Inscripción guardada con éxito", Toast.LENGTH_SHORT).show()
-        } catch (e: Exception) {
-            Log.e("UserError", "Error al guardar la inscripción : ${e.message}")
-            Toast.makeText(context, "Error al guardar la inscripción : ${e.message}", Toast.LENGTH_SHORT).show()
         }
+        inscripcionesCreadas = listaInscripcion
+        onUpdateIsLoading(false)
+    }.addOnFailureListener { exception ->
+        onUpdateIsLoading(false)
     }
 }
 
