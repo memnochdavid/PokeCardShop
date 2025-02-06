@@ -69,6 +69,7 @@ fun Menu(
                             "Reservas" -> Icon(Icons.Filled.Star, contentDescription = item)
                             "Crear Evento" -> Icon(Icons.Filled.DateRange, contentDescription = item)
                             "Eventos Creados" -> Icon(Icons.Filled.Email, contentDescription = item)
+                            "Mis Eventos" -> Icon(Icons.Filled.Person, contentDescription = item)
                             "Opciones" -> Icon(Icons.Filled.Settings, contentDescription = item)
                             else -> Icon(Icons.AutoMirrored.Filled.List, contentDescription = item)
                         }

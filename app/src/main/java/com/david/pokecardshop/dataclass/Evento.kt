@@ -18,30 +18,21 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.sizeIn
 import androidx.compose.foundation.layout.systemBarsPadding
 import androidx.compose.foundation.layout.wrapContentHeight
-import androidx.compose.foundation.layout.wrapContentSize
-import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.grid.GridCells
-import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
-import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
-import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.OutlinedTextField
@@ -70,31 +61,24 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.compose.ui.zIndex
 import androidx.constraintlayout.compose.ConstraintLayout
-import androidx.constraintlayout.compose.Dimension
 import androidx.navigation.NavHostController
 import coil.compose.rememberAsyncImagePainter
-import com.david.pokecardshop.CarPequeFB
-import com.david.pokecardshop.CartaFB
 import com.david.pokecardshop.R
-import com.david.pokecardshop.cargaCartasCreadas
-import com.david.pokecardshop.cartasCreadas
-import com.david.pokecardshop.misCartas
 import com.david.pokecardshop.refBBDD
 import com.david.pokecardshop.ui.stuff.Boton
 import com.david.pokecardshop.ui.theme.*
 import com.david.pokecardshop.usuario_key
+import com.google.firebase.database.DataSnapshot
+import com.google.firebase.database.DatabaseError
+import com.google.firebase.database.ValueEventListener
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.tasks.await
-import java.util.Date
-import kotlin.collections.getValue
-import kotlin.io.path.exists
+import kotlin.collections.toMutableList
 
 var eventosCreados by mutableStateOf<List<Evento>>(emptyList())
 var misEventos by mutableStateOf<List<String>>(emptyList())
-var inscripcionesCreadas by mutableStateOf<List<Inscripcion>>(emptyList())
+var inscritosEventoActual by mutableStateOf<List<String>>(emptyList())
 
 data class Evento(
     var evento_id: String = "",
@@ -432,8 +416,8 @@ fun CartelEvento(
 @Composable
 fun EventoPeque(
     modifier: Modifier = Modifier,
-    evento: Evento = Evento(),
-    onEventoClick: () -> Unit = {}
+    evento: Evento,
+    onEventoClick: () -> Unit = {},
 ){
     var isPressed by remember { mutableStateOf(false) }
     var click by remember { mutableStateOf(false) }
@@ -493,7 +477,7 @@ fun EventoPeque(
             val backgroundImage = painterResource(R.drawable.evento_background)
             Image(
                 modifier = Modifier
-                    .constrainAs(imagen){
+                    .constrainAs(imagen) {
                         start.linkTo(parent.start)
                         top.linkTo(parent.top)
                         bottom.linkTo(parent.bottom)
@@ -544,180 +528,212 @@ fun EventoGrande(
 ){
     val context = LocalContext.current
     val scope = rememberCoroutineScope()
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .background(Color.Transparent)
-            .padding(top = 0.dp),
-        horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.Center
-    ){
-        Card(
-            modifier = modifier.fillMaxSize(0.8f),
-            shape = RoundedCornerShape(0.dp),
-            elevation = CardDefaults.cardElevation(defaultElevation = 20.dp),
-        ) {
-            ConstraintLayout(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .background(color_fonto_cartel)
-            ) {
-                val (logo, titulo, datos, actividades, sponsors) = createRefs()
-                Image(
-                    painter = painterResource(R.drawable.pokemonlogo),
-                    contentDescription = "Logo",
-                    contentScale = ContentScale.FillWidth,
-                    modifier = Modifier
-                        .constrainAs(logo) {
-                            top.linkTo(parent.top, margin = 10.dp)
-                            start.linkTo(parent.start, margin = 20.dp)
-                            end.linkTo(parent.end, margin = 20.dp)
-                        }
-                )
-                Text(
-                    text = evento.titulo,
-                    color = Color.Red,
-                    fontSize = 30.sp,
-                    fontWeight = FontWeight.Bold,
-                    modifier = Modifier
-                        .constrainAs(titulo) {
-                            top.linkTo(logo.bottom, margin = 10.dp)
-                            start.linkTo(parent.start, margin = 10.dp)
-                            end.linkTo(parent.end, margin = 10.dp)
-                        }
-                )
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .constrainAs(datos) {
-                            top.linkTo(titulo.bottom, margin = 10.dp)
-                            start.linkTo(parent.start, margin = 20.dp)
-                            end.linkTo(parent.end, margin = 20.dp)
-                        },
-                    horizontalArrangement = Arrangement.SpaceEvenly
-                ) {
-                    Image(
-                        painter = painterResource(R.drawable.charizard),
-                        contentDescription = "imagen_izq",
-                        contentScale = ContentScale.Inside,
-                        modifier = Modifier
-                            .size(100.dp)
-                    )
-                    Text(
-                        text = evento.descripcion,
-                        fontSize = 30.sp,
-                        color = Color.Red,
-                        textAlign = TextAlign.Center,
-                        fontWeight = FontWeight.Bold,
-                        modifier = Modifier.fillMaxWidth(0.7f),
-                    )
-                    Image(
-                        painter = painterResource(R.drawable.pikachu_cartel),
-                        contentDescription = "imagen_izq",
-                        contentScale = ContentScale.Inside,
-                        modifier = Modifier
-                            .size(100.dp)
-                    )
-                }
-                Column( // Changed from LazyColumn to Column
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .constrainAs(actividades) {
-                            top.linkTo(datos.bottom, margin = 10.dp)
-                            start.linkTo(parent.start, margin = 20.dp)
-                            end.linkTo(parent.end, margin = 20.dp)
-                        },
-                    horizontalAlignment = Alignment.CenterHorizontally
-                ) {
-                    evento.actividades.forEachIndexed { index, actividad ->
-                        Row(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(vertical = 5.dp, horizontal = 10.dp),
-                            verticalAlignment = Alignment.CenterVertically,
-                            horizontalArrangement = Arrangement.Center
-                        ) {
-                            Text(
-                                text = actividad,
-                                fontSize = 20.sp,
-                                color = Color.Black,
-                                textAlign = TextAlign.Center,
-                                fontWeight = FontWeight.Bold
-                            )
-                            if (index < evento.actividades.size - 1) {
-                                Text(
-                                    text = " - ",
-                                    fontSize = 20.sp,
-                                    color = Color.Black,
-                                    fontWeight = FontWeight.Bold
-                                )
-                            }
-                        }
-                    }
-                }
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .wrapContentHeight()
-                        .constrainAs(sponsors) {
-                            top.linkTo(actividades.bottom, margin = 10.dp)
-                            start.linkTo(parent.start, margin = 20.dp)
-                            end.linkTo(parent.end, margin = 20.dp)
-                            bottom.linkTo(parent.bottom, margin = 10.dp)
-                        },
-                    horizontalArrangement = Arrangement.SpaceEvenly,
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Image(
-                        painter = painterResource(R.drawable.pokeball_icon),
-                        contentDescription = "imagen_izq",
-                        contentScale = ContentScale.Crop,
-                        modifier = Modifier
-                            .size(80.dp)
-                    )
-                    Image(
-                        painter = painterResource(R.drawable.icon),
-                        contentDescription = "imagen_izq",
-                        contentScale = ContentScale.Crop,
-                        modifier = Modifier
-                            .size(100.dp)
-                    )
-                    Image(
-                        painter = painterResource(R.drawable.logo_escuela),
-                        contentDescription = "imagen_izq",
-                        contentScale = ContentScale.Inside,
-                        modifier = Modifier
-                            .size(100.dp)
-                    )
-                }
-            }
-        }
-        Spacer(modifier = Modifier
-            .height(15.dp)
-            .background(Color.Transparent))
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .background(Color.Transparent),
-            horizontalArrangement = Arrangement.SpaceEvenly
-        ) {
-            Boton(
-                text = "Atrás",
-                onClick = {
-                    onEventoClick()
-                }
-            )
-            val usuarioInscrito = inscripcionesCreadas.flatMap { it.inscritos }.any { it == usuario_key }
-            if (!usuarioInscrito) {
-                Boton(
-                    text = "Apúntate!",
-                    onClick = {
-                        creaInscripcion( evento_id = evento.evento_id, nuevo_inscrito = usuario_key, context = context, scopeUser = scope)
-                    }
-                )
+
+    var isLoading by remember { mutableStateOf(true) }
+
+    var usuarioInscrito by remember { mutableStateOf(false) }
+
+    LaunchedEffect(key1 = evento.evento_id) {
+        cargaInscripcionesEvento(evento.evento_id) { loading, inscritos ->
+            isLoading = loading
+            if (!loading) {
+                inscritosEventoActual = inscritos
             }
         }
     }
+
+    LaunchedEffect(key1 = inscritosEventoActual) {
+        usuarioInscrito = inscritosEventoActual.contains(usuario_key)
+    }
+
+    if (isLoading) {
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+        ){
+            CircularProgressIndicator()
+        }
+    } else {
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .background(Color.Transparent)
+                .padding(top = 0.dp),
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.Center
+        ){
+            Card(
+                modifier = modifier.fillMaxSize(0.8f),
+                shape = RoundedCornerShape(0.dp),
+                elevation = CardDefaults.cardElevation(defaultElevation = 20.dp),
+            ) {
+                ConstraintLayout(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .background(color_fonto_cartel)
+                ) {
+                    val (logo, titulo, datos, actividades, sponsors) = createRefs()
+                    Image(
+                        painter = painterResource(R.drawable.pokemonlogo),
+                        contentDescription = "Logo",
+                        contentScale = ContentScale.FillWidth,
+                        modifier = Modifier
+                            .constrainAs(logo) {
+                                top.linkTo(parent.top, margin = 10.dp)
+                                start.linkTo(parent.start, margin = 20.dp)
+                                end.linkTo(parent.end, margin = 20.dp)
+                            }
+                    )
+                    Text(
+                        text = evento.titulo,
+                        color = Color.Red,
+                        fontSize = 30.sp,
+                        fontWeight = FontWeight.Bold,
+                        modifier = Modifier
+                            .constrainAs(titulo) {
+                                top.linkTo(logo.bottom, margin = 10.dp)
+                                start.linkTo(parent.start, margin = 10.dp)
+                                end.linkTo(parent.end, margin = 10.dp)
+                            }
+                    )
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .constrainAs(datos) {
+                                top.linkTo(titulo.bottom, margin = 10.dp)
+                                start.linkTo(parent.start, margin = 20.dp)
+                                end.linkTo(parent.end, margin = 20.dp)
+                            },
+                        horizontalArrangement = Arrangement.SpaceEvenly
+                    ) {
+                        Image(
+                            painter = painterResource(R.drawable.charizard),
+                            contentDescription = "imagen_izq",
+                            contentScale = ContentScale.Inside,
+                            modifier = Modifier
+                                .size(100.dp)
+                        )
+                        Text(
+                            text = evento.descripcion,
+                            fontSize = 30.sp,
+                            color = Color.Red,
+                            textAlign = TextAlign.Center,
+                            fontWeight = FontWeight.Bold,
+                            modifier = Modifier.fillMaxWidth(0.7f),
+                        )
+                        Image(
+                            painter = painterResource(R.drawable.pikachu_cartel),
+                            contentDescription = "imagen_izq",
+                            contentScale = ContentScale.Inside,
+                            modifier = Modifier
+                                .size(100.dp)
+                        )
+                    }
+                    Column( // Changed from LazyColumn to Column
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .constrainAs(actividades) {
+                                top.linkTo(datos.bottom, margin = 10.dp)
+                                start.linkTo(parent.start, margin = 20.dp)
+                                end.linkTo(parent.end, margin = 20.dp)
+                            },
+                        horizontalAlignment = Alignment.CenterHorizontally
+                    ) {
+                        evento.actividades.forEachIndexed { index, actividad ->
+                            Row(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(vertical = 5.dp, horizontal = 10.dp),
+                                verticalAlignment = Alignment.CenterVertically,
+                                horizontalArrangement = Arrangement.Center
+                            ) {
+                                Text(
+                                    text = actividad,
+                                    fontSize = 20.sp,
+                                    color = Color.Black,
+                                    textAlign = TextAlign.Center,
+                                    fontWeight = FontWeight.Bold
+                                )
+                                if (index < evento.actividades.size - 1) {
+                                    Text(
+                                        text = " - ",
+                                        fontSize = 20.sp,
+                                        color = Color.Black,
+                                        fontWeight = FontWeight.Bold
+                                    )
+                                }
+                            }
+                        }
+                    }
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .wrapContentHeight()
+                            .constrainAs(sponsors) {
+                                top.linkTo(actividades.bottom, margin = 10.dp)
+                                start.linkTo(parent.start, margin = 20.dp)
+                                end.linkTo(parent.end, margin = 20.dp)
+                                bottom.linkTo(parent.bottom, margin = 10.dp)
+                            },
+                        horizontalArrangement = Arrangement.SpaceEvenly,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Image(
+                            painter = painterResource(R.drawable.pokeball_icon),
+                            contentDescription = "imagen_izq",
+                            contentScale = ContentScale.Crop,
+                            modifier = Modifier
+                                .size(80.dp)
+                        )
+                        Image(
+                            painter = painterResource(R.drawable.icon),
+                            contentDescription = "imagen_izq",
+                            contentScale = ContentScale.Crop,
+                            modifier = Modifier
+                                .size(100.dp)
+                        )
+                        Image(
+                            painter = painterResource(R.drawable.logo_escuela),
+                            contentDescription = "imagen_izq",
+                            contentScale = ContentScale.Inside,
+                            modifier = Modifier
+                                .size(100.dp)
+                        )
+                    }
+                }
+            }
+            Spacer(modifier = Modifier
+                .height(15.dp)
+                .background(Color.Transparent))
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .background(Color.Transparent),
+                horizontalArrangement = Arrangement.SpaceEvenly
+            ) {
+                Boton(
+                    text = "Atrás",
+                    onClick = {
+                        onEventoClick()
+                    }
+                )
+                if (!usuarioInscrito) {
+                    Boton(
+                        text = "Apúntate!",
+                        onClick = {
+                            creaInscripcion(
+                                evento_id = evento.evento_id,
+                                nuevo_inscrito = usuario_key,
+                                context = context,
+                                scopeUser = scope
+                            )
+                        }
+                    )
+                }
+            }
+        }
+    }
+
 }
 
 @Composable
@@ -725,16 +741,82 @@ fun EventosCreados(
     modifier: Modifier = Modifier,
     navController: NavHostController
 ){
-    var onEventoClick by remember { mutableStateOf(Evento()) }
     var eventoGrande by remember { mutableStateOf(false) }
+    var eventoSeleccionado by remember { mutableStateOf<Evento?>(null) }
     var isLoading by remember { mutableStateOf(true) }
-    //val sesion = UsuarioFromKey(usuario_key, refBBDD)
+    var isLoadingInscripciones by remember { mutableStateOf(false) }
 
     cargaEventosCreados(onUpdateIsLoading = { isLoading = it })
 
-    LaunchedEffect(key1 = onEventoClick) {
-        cargaInscripcionesEvento(evento_id = onEventoClick.evento_id, onUpdateIsLoading = { isLoading = it })
+    LaunchedEffect(key1 = eventoSeleccionado?.evento_id) {
+        if (eventoSeleccionado != null) {
+            isLoadingInscripciones = true
+            cargaInscripcionesEvento(eventoSeleccionado!!.evento_id) { loading, inscritos ->
+                isLoadingInscripciones = loading
+                if (!loading) {
+                    inscritosEventoActual = inscritos
+                }
+            }
+        }
     }
+    if (isLoading) { //se asegura de haber cargado los datos de la nube antes de empezar a mostrar nada
+        Box(
+            modifier = modifier
+                .background(color_fuego_dark)
+                .fillMaxSize(),
+            contentAlignment = Alignment.Center
+        ) {
+            CircularProgressIndicator(
+                color = colorResource(R.color.white),
+                strokeWidth = 10.dp,
+                modifier = Modifier.size(100.dp)
+            )
+        }
+    }
+    else{
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .background(color_fuego_dark)
+                .padding(top = 0.dp) // Apply padding to the Box
+                .systemBarsPadding()
+                .imePadding(),
+            contentAlignment = Alignment.Center,
+        ) {
+            LazyColumn(//este lazycolumn
+                modifier = Modifier
+                    .fillMaxSize()
+            ) {
+                items(eventosCreados, key = { it.evento_id }) { evento ->
+                    if(evento.evento_id !in misEventos){
+                        EventoPeque(
+                            evento = evento,
+                            onEventoClick = {
+                                eventoSeleccionado = evento
+                                eventoGrande = !eventoGrande
+                            }
+                        )
+                    }
+                }
+            }
+            if (eventoGrande && eventoSeleccionado != null) {
+                //meustra evento_grande
+                EventoGrande(evento = eventoSeleccionado!!, onEventoClick = {eventoGrande = !eventoGrande})
+            }
+        }
+    }
+}
+
+@Composable
+fun MisEventos(
+    modifier: Modifier = Modifier,
+    navController: NavHostController
+){
+    var eventoGrande by remember { mutableStateOf(false) }
+    var eventoSeleccionado by remember { mutableStateOf<Evento?>(null) }
+    var isLoading by remember { mutableStateOf(true) }
+
+    cargaMisEventos( onUpdateIsLoading = { isLoading = it })
 
     if (isLoading) { //se asegura de haber cargado los datos de la nube antes de empezar a mostrar nada
         Box(
@@ -760,27 +842,27 @@ fun EventosCreados(
                 .imePadding(),
             contentAlignment = Alignment.Center,
         ) {
-            LazyColumn(
+            LazyColumn(//este lazycolumn
                 modifier = Modifier
                     .fillMaxSize()
             ) {
-                items(eventosCreados) { evento ->
-
-                    if(evento.evento_id !in misEventos){
-                        onEventoClick = evento
-                        EventoPeque(evento = evento, onEventoClick = {eventoGrande = !eventoGrande})
-                    }
+                items(eventosCreados, key = { it.evento_id }) { evento ->
+                    EventoPeque(
+                        evento = evento,
+                        onEventoClick = {
+                            eventoSeleccionado = evento
+                            eventoGrande = !eventoGrande
+                        }
+                    )
                 }
             }
-            if (eventoGrande) {
+            if (eventoGrande && eventoSeleccionado != null) {
                 //meustra evento_grande
-                EventoGrande(evento = onEventoClick, onEventoClick = {eventoGrande = !eventoGrande})
+                EventoGrande(evento = eventoSeleccionado!!, onEventoClick = {eventoGrande = !eventoGrande})
             }
         }
     }
 }
-
-
 
 fun creaEvento(
     titulo: String,
@@ -809,26 +891,93 @@ fun creaInscripcion(
     context: Context,
     scopeUser: CoroutineScope
 ) {
-    //TODO()
+    val inscripcionesRef = refBBDD.child("tienda").child("inscripciones")
+
+    // Query to find existing inscription by event_id
+    val query = inscripcionesRef.orderByChild("evento_id").equalTo(evento_id)
+
+    query.addListenerForSingleValueEvent(object : ValueEventListener {
+        override fun onDataChange(snapshot: DataSnapshot) {
+            scopeUser.launch {
+                try {
+                    if (snapshot.exists()) {
+                        // Inscription exists, update it
+                        for (inscripcionSnapshot in snapshot.children) {
+                            val inscripcion = inscripcionSnapshot.getValue(Inscripcion::class.java)
+                            if (inscripcion != null) {
+                                val updatedInscritos = inscripcion.inscritos.toMutableList()
+                                if (!updatedInscritos.contains(nuevo_inscrito)) {
+                                    updatedInscritos.add(nuevo_inscrito)
+                                    inscripcion.inscritos = updatedInscritos
+                                    inscripcionesRef.child(inscripcion.inscripcion_id).setValue(inscripcion)
+                                    Log.d("creaInscripcion", "User $nuevo_inscrito added to existing inscription for event $evento_id")
+                                } else {
+                                    Log.d("creaInscripcion", "User $nuevo_inscrito already in inscription for event $evento_id")
+                                }
+                            }
+                        }
+                    } else {
+                        // Inscription doesn't exist, create a new one
+                        val inscripcion = Inscripcion(evento_id = evento_id, inscritos = listOf(nuevo_inscrito))
+                        inscripcionesRef.child(inscripcion.inscripcion_id).setValue(inscripcion)
+                        Log.d("creaInscripcion", "New inscription created for event $evento_id with user $nuevo_inscrito")
+                    }
+                } catch (e: Exception) {
+                    Log.e("UserError", "Error al guardar la inscripcion : ${e.message}")
+                    Toast.makeText(context, "Error al guardar la inscripcion : ${e.message}", Toast.LENGTH_SHORT).show()
+                } finally {
+                    Toast.makeText(context, "Inscripción guardada con éxito", Toast.LENGTH_SHORT).show()
+                }
+            }
+        }
+
+        override fun onCancelled(error: DatabaseError) {
+            Log.e("UserError", "Error al leer la inscripcion : ${error.message}")
+            Toast.makeText(context, "Error al leer la inscripcion : ${error.message}", Toast.LENGTH_SHORT).show()
+        }
+    })
 }
 
 fun cargaInscripcionesEvento(
     evento_id: String,
-    onUpdateIsLoading: (Boolean) -> Unit
-){
-    refBBDD.child("tienda").child("inscripciones").get().addOnSuccessListener { dataSnapshot ->
-        val listaInscripcion = mutableListOf<Inscripcion>()
-        for (childSnapshot in dataSnapshot.children) {
-            if (childSnapshot.child("evento_id").value == evento_id) {
-                val inscripcion = childSnapshot.getValue(Inscripcion::class.java)
-                inscripcion?.let { listaInscripcion.add(it) }
+    onUpdateIsLoading: (Boolean, List<String>) -> Unit
+) {
+    val inscripcionesRef = refBBDD.child("tienda").child("inscripciones")
+
+    val query = inscripcionesRef.orderByChild("evento_id").equalTo(evento_id)
+
+    onUpdateIsLoading(true, emptyList())
+    Log.d("cargaInscripcionesEvento", "Fetching inscriptions for event: $evento_id")
+
+    query.addListenerForSingleValueEvent(object : ValueEventListener {
+        override fun onDataChange(snapshot: DataSnapshot) {
+            try {
+                if (snapshot.exists()) {
+                    for (inscripcionSnapshot in snapshot.children) {
+                        val inscripcion = inscripcionSnapshot.getValue(Inscripcion::class.java)
+                        if (inscripcion != null) {
+                            Log.d("cargaInscripcionesEvento", "Inscriptions found for event $evento_id: ${inscripcion.inscritos}")
+                            onUpdateIsLoading(false, inscripcion.inscritos)
+                            return
+                        }
+                    }
+                    Log.d("cargaInscripcionesEvento", "No inscriptions found for event $evento_id")
+                    onUpdateIsLoading(false, emptyList())
+                } else {
+                    Log.d("cargaInscripcionesEvento", "No inscriptions found for event $evento_id")
+                    onUpdateIsLoading(false, emptyList())
+                }
+            } catch (e: Exception) {
+                Log.e("UserError", "Error al cargar las inscripciones : ${e.message}")
+                onUpdateIsLoading(false, emptyList())
             }
         }
-        inscripcionesCreadas = listaInscripcion
-        onUpdateIsLoading(false)
-    }.addOnFailureListener { exception ->
-        onUpdateIsLoading(false)
-    }
+
+        override fun onCancelled(error: DatabaseError) {
+            Log.e("UserError", "Error al leer las inscripciones : ${error.message}")
+            onUpdateIsLoading(false, emptyList())
+        }
+    })
 }
 
 
@@ -848,9 +997,26 @@ fun cargaEventosCreados(
     }
 }
 
-
-@Preview (showBackground = true, widthDp = 500, heightDp = 900)
-@Composable
-fun GreetingPreview() {
-    EventoPeque()
+fun cargaMisEventos(
+    onUpdateIsLoading: (Boolean) -> Unit
+){
+    refBBDD.child("tienda").child("inscripciones").orderByChild("inscritos").equalTo(usuario_key).get().addOnSuccessListener { dataSnapshot ->
+        val listaEvento = mutableListOf<String>()
+        for (childSnapshot in dataSnapshot.children) {
+            val inscripcion = childSnapshot.getValue(Inscripcion::class.java)
+            inscripcion?.let { listaEvento.add(it.evento_id) }
+        }
+        misEventos = listaEvento
+        onUpdateIsLoading(false)
+    }.addOnFailureListener { exception ->
+        onUpdateIsLoading(false)
+    }
 }
+
+//@Preview (showBackground = true, widthDp = 500, heightDp = 900)
+//@Composable
+//fun GreetingPreview() {
+//    EventoPeque()
+//}
+
+
