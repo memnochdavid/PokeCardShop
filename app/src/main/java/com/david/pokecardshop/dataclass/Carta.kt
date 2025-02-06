@@ -77,6 +77,8 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import kotlin.random.Random
+import kotlin.text.toFloat
 
 data class Carta(
     var carta_id: String="",
@@ -88,10 +90,12 @@ data class Carta(
     var habilidad_poke: List<String> = listOf(""),
     var fondo_foto: Int=0,
     var fondo_carta: Int=0,
-    var tipo: String = ""
+    var tipo: String = "",
+    var precio: Float = 0f
 ){
     init{
         carta_id = refBBDD.child("tienda").child("cartas").push().key!!
+        precio = Random.nextDouble(10.0, 99.0).toFloat()
     }
 }
 

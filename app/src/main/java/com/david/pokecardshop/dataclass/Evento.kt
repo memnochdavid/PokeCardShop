@@ -75,6 +75,8 @@ import com.google.firebase.database.ValueEventListener
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
 import kotlin.collections.toMutableList
+import kotlin.random.Random
+import kotlin.text.toFloat
 
 var eventosCreados by mutableStateOf<List<Evento>>(emptyList())
 var misEventos by mutableStateOf<List<String>>(emptyList())
@@ -85,9 +87,11 @@ data class Evento(
     var titulo: String ="",
     var descripcion: String = "",
     var actividades: List<String> = listOf(),
+    var precio: Float = 0f,
 ){
     init{
         evento_id = refBBDD.child("tienda").child("eventos").push().key!!
+        precio = Random.nextDouble(30.0, 100.0).toFloat()
     }
 }
 
