@@ -163,62 +163,58 @@ fun CreaEvento(modifier: Modifier = Modifier, navController: NavHostController){
         }
     }
 }
-
+*/
 @Composable
-fun FormularioEvento(){
+fun FormularioEvento(
+    titulo: String = "Título del evento",
+    descripcion: String = "Descripción del evento",
+    lista_actividades: List<String> = listOf(""),
+    onTituloChange: (String) -> Unit = {},
+    onDescripcionChange: (String) -> Unit = {},
+    onListaActividadesChange: (List<String>) -> Unit = {}
+){
     Column(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(16.dp)
+            .padding(20.dp)
     ) {
-        if (isLoadingDesc || isLoadingAbility || isAbilityNameLoading) {
-            Row(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .background(Color.Transparent),
-            ){
-                Text(text = "CARGANDO CONTENIDO...", color = Color.White)
-            }
-        } else {
-
+        OutlinedTextField(
+            value = titulo,
+            onValueChange = onTituloChange,
+            label = { Text("Nombre") },
+            modifier = Modifier.fillMaxWidth()
+        )
+        Spacer(modifier = Modifier.height(8.dp))
+        OutlinedTextField(
+            value = descripcion,
+            onValueChange = onDescripcionChange,
+            label = { Text("Descripción") },
+            modifier = Modifier.fillMaxWidth()
+        )
+        Row(
+            modifier = Modifier
+                .fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically
+        ){
             OutlinedTextField(
-                value = numberText,
-                onValueChange = onNumberChange,
-                label = { Text("Número") },
-                modifier = Modifier.fillMaxWidth()
+                value = lista_actividades[0],
+                onValueChange = { onListaActividadesChange(listOf(it)) },
+                label = { Text("Nueva actividad") },
+                modifier = Modifier.fillMaxWidth(0.5f)
             )
-            Spacer(modifier = Modifier.height(8.dp))
-            OutlinedTextField(
-                value = nameText,
-                onValueChange = onNameChange,
-                label = { Text("Nombre") },
-                modifier = Modifier.fillMaxWidth()
-            )
-            Spacer(modifier = Modifier.height(8.dp))
-            OutlinedTextField(
-                value = adaptaDescripcion(descText),
-                onValueChange = onDescChange,
-                label = { Text("Descripción") },
-                modifier = Modifier.fillMaxWidth()
-            )
-            Spacer(modifier = Modifier.height(8.dp))
-            OutlinedTextField(
-                value = habilidadText,
-                onValueChange = onHabilidadChange,
-                label = { Text("Habilidad") },
-                modifier = Modifier.fillMaxWidth()
-            )
-            Spacer(modifier = Modifier.height(8.dp))
-            OutlinedTextField(
-                value = adaptaDescripcion(descHabilidad),
-                onValueChange = onDescHabilidadChange,
-                label = { Text("Descripción de la Habilidad") },
-                modifier = Modifier.fillMaxWidth()
+            Boton(
+                text = "Añadir",
+                onClick = {
+                    onListaActividadesChange(lista_actividades + listOf(lista_actividades[0]))
+                }
             )
         }
     }
 }
-*/
+
+
+
 @Composable
 fun CartelEvento(
     modifier: Modifier = Modifier,
@@ -444,5 +440,5 @@ fun creaInscripcion(
 @Preview (showBackground = true, widthDp = 500, heightDp = 600)
 @Composable
 fun GreetingPreview() {
-    CartelEvento()
+    FormularioEvento()
 }
