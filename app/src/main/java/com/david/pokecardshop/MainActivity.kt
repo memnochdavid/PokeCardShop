@@ -92,14 +92,12 @@ fun MainScreen(onThemeChange: (Boolean) -> Unit) {
     var selectedItem by remember { mutableIntStateOf(0) }
     val sesion = UsuarioFromKey(usuario_key, refBBDD)
 
-    // Define menu items based on admin status
     val menuItems = if (sesion.admin) {
         listOf("Crear Carta", "Cartas Creadas", "Reservas", "Crear Eventos", "Eventos Creados","Opciones")
     } else {
         listOf("MisCartas", "Cartas Creadas", "Reservas", "Eventos Creados", "Mis Eventos","Opciones")
     }
 
-    // Map selectedItem to Screen based on admin status
     val currentRoute = when {
         sesion.admin && selectedItem == 0 -> Screen.CrearCarta.route
         sesion.admin && selectedItem == 1 -> Screen.CartasCreadas.route
@@ -143,8 +141,6 @@ fun MainScreen(onThemeChange: (Boolean) -> Unit) {
             }
         }
     }
-
-    // Navigate when the current route changes
     LaunchedEffect(currentRoute) {
         navController.navigate(currentRoute) {
             popUpTo(navController.graph.startDestinationId) {
