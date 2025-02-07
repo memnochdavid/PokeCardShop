@@ -66,6 +66,7 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
 import coil.compose.rememberAsyncImagePainter
 import com.david.pokecardshop.R
+import com.david.pokecardshop.dataclass.model.truncaDosDecimales
 import com.david.pokecardshop.refBBDD
 import com.david.pokecardshop.ui.stuff.Boton
 import com.david.pokecardshop.ui.stuff.CardGrandeDorso
@@ -95,7 +96,7 @@ data class Carta(
 ){
     init{
         carta_id = refBBDD.child("tienda").child("cartas").push().key!!
-        precio = Random.nextDouble(10.0, 99.0).toFloat()
+        precio = truncaDosDecimales(Random.nextDouble(10.0, 99.0).toFloat())
     }
 }
 

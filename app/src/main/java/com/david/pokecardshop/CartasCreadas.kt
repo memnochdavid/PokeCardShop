@@ -399,6 +399,7 @@ fun CarPequeFB(carta: Carta, onClick: () -> Unit){
         ), label = ""
     )
     val color_tipo = TypeStringToColor(carta.tipo,1)
+
     Card(
         modifier = Modifier
             .wrapContentSize()
@@ -442,7 +443,7 @@ fun CarPequeFB(carta: Carta, onClick: () -> Unit){
             ConstraintLayout(
                 modifier = it
             ) {
-                val (imagen, nombre, tipos) = createRefs()
+                val (imagen, nombre, precio) = createRefs()
                 val imagen_poke = rememberAsyncImagePainter(
                     model = carta.imagenAPI,
                     contentScale = ContentScale.FillBounds,
@@ -476,9 +477,22 @@ fun CarPequeFB(carta: Carta, onClick: () -> Unit){
                         .constrainAs(nombre) {
                             start.linkTo(parent.start)
                             top.linkTo(imagen.bottom)
-                            bottom.linkTo(parent.bottom)
+                            bottom.linkTo(precio.top)
                             end.linkTo(parent.end)
                         }
+                )
+                Text(
+                text = carta.precio.toString()+divisaSeleccionada,
+                color = Color.Black,
+                fontSize = 15.sp,
+                fontWeight = FontWeight.Bold,
+                modifier = Modifier
+                    .constrainAs(precio) {
+                        start.linkTo(parent.start)
+                        top.linkTo(nombre.bottom)
+                        bottom.linkTo(parent.bottom)
+                        end.linkTo(parent.end)
+                    }
                 )
             }
         }

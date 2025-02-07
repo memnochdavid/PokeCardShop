@@ -63,3 +63,7 @@ data class NamedApiResourceList(
 fun generaPrecioRandom(): Float {
     return Random.nextDouble(5.0, 99.0).toFloat()
 }
+
+fun truncaDosDecimales(precio: Float): Float {
+    return String.format("%.2f", precio).toFloat()
+}

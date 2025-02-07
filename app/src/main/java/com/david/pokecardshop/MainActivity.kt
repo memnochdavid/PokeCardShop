@@ -4,21 +4,10 @@ import android.content.Context
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
-import androidx.activity.enableEdgeToEdge
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.systemBarsPadding
-import androidx.compose.foundation.layout.wrapContentSize
-import androidx.compose.foundation.lazy.grid.GridCells
-import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
-import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Menu
-import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.DrawerValue
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
@@ -28,46 +17,39 @@ import androidx.compose.material3.rememberDrawerState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
-import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.core.content.edit
-import androidx.lifecycle.viewmodel.compose.viewModel
-import androidx.navigation.NavHostController
 import androidx.navigation.compose.rememberNavController
-import com.david.pokecardshop.dataclass.PokeInfoViewModel
-import com.david.pokecardshop.dataclass.Pokemon
-import com.david.pokecardshop.dataclass.Usuario
 import com.david.pokecardshop.dataclass.UsuarioFromKey
 import com.david.pokecardshop.dataclass.model.Menu
 import com.david.pokecardshop.dataclass.model.Navigation
 import com.david.pokecardshop.dataclass.model.Screen
-import com.david.pokecardshop.ui.stuff.CardGrande
-import com.david.pokecardshop.ui.stuff.CardPeque2
 import com.david.pokecardshop.ui.theme.PokeCardShopTheme
-import com.david.pokecardshop.ui.theme.*
-import com.google.firebase.database.DatabaseReference
-import com.google.firebase.database.FirebaseDatabase
-import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.launch
 
-
+var divisaSeleccionada by mutableStateOf<String>("")
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
         val sharedPreferences = getSharedPreferences("my_preferences", Context.MODE_PRIVATE)
 
         setContent {
+            val isDollarSelected = sharedPreferences.getBoolean("divisa", false)
+            divisaSeleccionada = if (isDollarSelected) {
+                "$"
+            } else {
+                "€"
+            }
             var darkTheme by remember {
                 mutableStateOf(sharedPreferences.getBoolean("dark_mode", false))
             }

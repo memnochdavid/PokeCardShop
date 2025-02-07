@@ -26,6 +26,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.systemBarsPadding
 import androidx.compose.foundation.layout.wrapContentHeight
+import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -61,10 +62,13 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.zIndex
 import androidx.constraintlayout.compose.ConstraintLayout
 import androidx.navigation.NavHostController
 import coil.compose.rememberAsyncImagePainter
 import com.david.pokecardshop.R
+import com.david.pokecardshop.dataclass.model.truncaDosDecimales
+import com.david.pokecardshop.divisaSeleccionada
 import com.david.pokecardshop.refBBDD
 import com.david.pokecardshop.ui.stuff.Boton
 import com.david.pokecardshop.ui.theme.*
@@ -91,7 +95,7 @@ data class Evento(
 ){
     init{
         evento_id = refBBDD.child("tienda").child("eventos").push().key!!
-        precio = Random.nextDouble(30.0, 100.0).toFloat()
+        precio = truncaDosDecimales(Random.nextDouble(30.0, 100.0).toFloat())
     }
 }
 
@@ -457,7 +461,7 @@ fun EventoPeque(
                         try {
                             awaitRelease()
                         } finally {
-                            isPressed = false // Reset isPressed in finally block
+                            isPressed = false
                         }
                         click = !click
                         onEventoClick()
@@ -472,55 +476,70 @@ fun EventoPeque(
                 .fillMaxWidth()
                 .border(5.dp, verde40, RectangleShape)
                 .background(verde40)
-        ){
-            val (logo, nombre, imagen) = createRefs()
+        ) {
+            val (datos, nombre, imagen) = createRefs()
             val imagen_evento = rememberAsyncImagePainter(
                 model = R.drawable.logo_evento,
                 contentScale = ContentScale.FillBounds,
             )
             val backgroundImage = painterResource(R.drawable.evento_background)
-            Image(
+
+            Box(
                 modifier = Modifier
                     .constrainAs(imagen) {
                         start.linkTo(parent.start)
                         top.linkTo(parent.top)
                         bottom.linkTo(parent.bottom)
-                        //end.linkTo(nombre.start)
                     }
-                    .size(100.dp),
-                painter = backgroundImage,
-                contentDescription = "Background Imagen",
-                contentScale = ContentScale.Crop // Adjust as needed
-            )
-            Image(
-                painter = imagen_evento,
-                contentDescription = "Evento Imagen",
+            ) {
+                Image(
+                    modifier = Modifier
+                        .size(100.dp),
+                    painter = backgroundImage,
+                    contentDescription = "Background Imagen",
+                    contentScale = ContentScale.Crop
+                )
+
+                Image(
+                    painter = imagen_evento,
+                    contentDescription = "Evento Imagen",
+                    modifier = Modifier
+                        .matchParentSize()
+                        .background(Color.White.copy(alpha = 0.3f))
+                        .zIndex(1f)
+                )
+            }
+            Column(
                 modifier = Modifier
-                    .size(100.dp)
-                    .fillMaxSize()
-                    .constrainAs(imagen) {
-                        start.linkTo(parent.start)
-                        top.linkTo(parent.top)
-                        bottom.linkTo(parent.bottom)
-                        //end.linkTo(nombre.start)
-                    }
-                    .background(Color.White.copy(alpha = 0.3f))
-            )
-            Text(
-                text = evento.titulo,
-                color = Color.Black,
-                fontSize = 15.sp,
-                fontWeight = FontWeight.Bold,
-                modifier = Modifier
-                    .constrainAs(nombre) {
+                    .constrainAs(datos) {
                         start.linkTo(imagen.end)
                         top.linkTo(parent.top)
                         bottom.linkTo(parent.bottom)
                         end.linkTo(parent.end)
                     }
-            )
+            ) {
+                Row(
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                ) {
+                    Text(
+                        text = evento.titulo,
+                        color = Color.Black,
+                        fontSize = 15.sp,
+                        fontWeight = FontWeight.Bold,
+                    )
+                }
+                Row(
+                    horizontalArrangement = Arrangement.Center,
+                ) {
+                    Text(
+                        text = evento.precio.toString() + divisaSeleccionada,
+                        color = Color.Black,
+                        fontSize = 15.sp,
+                        fontWeight = FontWeight.Bold,
+                    )
+                }
+            }
         }
-
     }
 }
 
