@@ -1,15 +1,13 @@
 package com.david.pokecardshop.dataclass
 
-import android.annotation.SuppressLint
+
 import android.content.Context
 import android.net.Uri
 import android.util.Log
 import android.widget.Toast
-import androidx.activity.ComponentActivity
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -27,15 +25,8 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.DropdownMenuItem
-import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.ExposedDropdownMenuBox
-import androidx.compose.material3.ExposedDropdownMenuDefaults
 import androidx.compose.material3.OutlinedTextField
-import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextField
-import androidx.compose.material3.TextFieldColors
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.State
@@ -48,38 +39,23 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.CompositingStrategy
 import androidx.compose.ui.graphics.RectangleShape
-import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.compose.ui.unit.toSize
 import androidx.compose.ui.zIndex
 import androidx.constraintlayout.compose.ConstraintLayout
-import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
 import coil.compose.rememberAsyncImagePainter
 import com.david.pokecardshop.R
-import com.david.pokecardshop.dataclass.model.truncaDosDecimales
 import com.david.pokecardshop.refBBDD
 import com.david.pokecardshop.ui.stuff.Boton
-import com.david.pokecardshop.ui.stuff.CardGrandeDorso
-import com.david.pokecardshop.ui.theme.blanco80
-import com.david.pokecardshop.ui.theme.*
-import com.google.android.gms.tasks.Tasks.await
 import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
-import kotlin.random.Random
-import kotlin.text.toFloat
 
 data class Carta(
     var carta_id: String="",
@@ -96,7 +72,7 @@ data class Carta(
 ){
     init{
         carta_id = refBBDD.child("tienda").child("cartas").push().key!!
-        precio = truncaDosDecimales(Random.nextDouble(10.0, 99.0).toFloat())
+        precio = (10..30).random().toFloat()
     }
 }
 
@@ -127,7 +103,6 @@ fun CreaCarta(modifier: Modifier = Modifier, navController: NavHostController) {
     LaunchedEffect(autoSelect) {
         if (autoSelect) {
             viewModel.getPokemonInfo(nameText)
-
         }
     }
 
@@ -138,7 +113,7 @@ fun CreaCarta(modifier: Modifier = Modifier, navController: NavHostController) {
                 nameText = it.name.firstMayus()
                 viewModel.getPokemonAbility(it.id)
                 viewModel.getPokemonDescription(it.id)
-                delay(3000)
+                delay(2000)
                 descText = spanishDescription.value
                 habilidadText = habilidadName.value
                 Log.d("NOMHabilidad", habilidad.value)
@@ -477,7 +452,6 @@ fun Carta(
     }
 }
 
-
 fun guardaCartaFB(
     carta: Carta,
     context: Context,
@@ -499,11 +473,3 @@ fun guardaCartaFB(
         }
     }
 }
-
-/*
-@Preview(showBackground = true, widthDp = 360, heightDp = 720)
-@Composable
-fun GreetingPreview2() {
-    CreaCarta()
-}
-*/

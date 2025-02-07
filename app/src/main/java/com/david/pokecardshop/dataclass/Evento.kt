@@ -26,7 +26,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.systemBarsPadding
 import androidx.compose.foundation.layout.wrapContentHeight
-import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -49,7 +48,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.scale
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.ContentScale
@@ -59,7 +57,6 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.zIndex
@@ -67,7 +64,6 @@ import androidx.constraintlayout.compose.ConstraintLayout
 import androidx.navigation.NavHostController
 import coil.compose.rememberAsyncImagePainter
 import com.david.pokecardshop.R
-import com.david.pokecardshop.dataclass.model.truncaDosDecimales
 import com.david.pokecardshop.divisaSeleccionada
 import com.david.pokecardshop.refBBDD
 import com.david.pokecardshop.ui.stuff.Boton
@@ -79,8 +75,6 @@ import com.google.firebase.database.ValueEventListener
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
 import kotlin.collections.toMutableList
-import kotlin.random.Random
-import kotlin.text.toFloat
 
 var eventosCreados by mutableStateOf<List<Evento>>(emptyList())
 var misEventos by mutableStateOf<List<String>>(emptyList())
@@ -95,7 +89,7 @@ data class Evento(
 ){
     init{
         evento_id = refBBDD.child("tienda").child("eventos").push().key!!
-        precio = truncaDosDecimales(Random.nextDouble(30.0, 100.0).toFloat())
+        precio = (50..100).random().toFloat()
     }
 }
 

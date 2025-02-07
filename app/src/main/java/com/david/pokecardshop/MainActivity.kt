@@ -1,7 +1,10 @@
 package com.david.pokecardshop
 
+import android.Manifest
 import android.content.Context
+import android.content.pm.PackageManager
 import android.os.Bundle
+import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.layout.Box
@@ -24,20 +27,37 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.core.app.ActivityCompat
+import androidx.core.content.ContextCompat
 import androidx.core.content.edit
+import androidx.core.view.children
 import androidx.navigation.compose.rememberNavController
+import com.david.pokecardshop.dataclass.Notificacion
+import com.david.pokecardshop.dataclass.Reserva
 import com.david.pokecardshop.dataclass.UsuarioFromKey
+import com.david.pokecardshop.dataclass.createNotificationChannel
 import com.david.pokecardshop.dataclass.model.Menu
 import com.david.pokecardshop.dataclass.model.Navigation
 import com.david.pokecardshop.dataclass.model.Screen
+import com.david.pokecardshop.dataclass.sendNotification
 import com.david.pokecardshop.ui.theme.PokeCardShopTheme
+import com.google.firebase.database.DataSnapshot
+import com.google.firebase.database.DatabaseError
+import com.google.firebase.database.ValueEventListener
 import kotlinx.coroutines.launch
+import kotlin.collections.getValue
+import kotlin.io.path.exists
 
 var divisaSeleccionada by mutableStateOf<String>("")
+var reservaNueva by mutableStateOf(Notificacion())
 
 class MainActivity : ComponentActivity() {
+
+    private var adminNotificationListener: ValueEventListener? = null
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
@@ -53,6 +73,38 @@ class MainActivity : ComponentActivity() {
             var darkTheme by remember {
                 mutableStateOf(sharedPreferences.getBoolean("dark_mode", false))
             }
+            val context = LocalContext.current
+            val sesion = UsuarioFromKey(usuario_key, refBBDD)
+
+            createNotificationChannel(context, reservaNueva)
+
+            LaunchedEffect(sesion.admin) {
+                if (sesion.admin) {
+                    // Listen for new reservations only if the user is an admin
+                    startAdminNotificationListener(context)
+                } else {
+                    // Remove the listener if the user is not an admin
+                    stopAdminNotificationListener()
+                }
+            }
+
+            LaunchedEffect(reservaNueva) {
+                if (sesion.admin) {
+                    if (ContextCompat.checkSelfPermission(
+                            context,
+                            Manifest.permission.POST_NOTIFICATIONS
+                        ) == PackageManager.PERMISSION_GRANTED
+                    ) {
+                        sendNotification(context, reservaNueva)
+                    } else {
+                        ActivityCompat.requestPermissions(
+                            context as ComponentActivity,
+                            arrayOf(Manifest.permission.POST_NOTIFICATIONS),
+                            0
+                        )
+                    }
+                }
+            }
 
             PokeCardShopTheme(darkTheme = darkTheme) {
                 MainScreen(
@@ -62,6 +114,48 @@ class MainActivity : ComponentActivity() {
                     }
                 )
             }
+        }
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        stopAdminNotificationListener()
+    }
+
+    private fun startAdminNotificationListener(context: Context) {
+        stopAdminNotificationListener() // Ensure no duplicate listeners
+
+        adminNotificationListener = object : ValueEventListener {
+            override fun onDataChange(snapshot: DataSnapshot) {
+                // This method will be called whenever data changes in the "reservas" node
+                if (snapshot.exists()) {
+                    // Iterate through the new reservations
+                    for (reservaSnapshot in snapshot.children) {
+                        val reserva = reservaSnapshot.getValue(Reserva::class.java)
+                        if (reserva != null) {
+                            val nombre_carta =
+                                cartasCreadas.find { it.carta_id == reserva.carta_id }?.nombre
+                            reservaNueva = Notificacion(
+                                titulo = "Nueva Reserva",
+                                texto = "Se ha reservado la carta de ${nombre_carta}!"
+                            )
+                        }
+                    }
+                }
+            }
+
+            override fun onCancelled(error: DatabaseError) {
+                Log.e("AdminNotification", "Error al escuchar las reservas: ${error.message}")
+            }
+        }
+
+        refBBDD.child("tienda").child("reservas").addValueEventListener(adminNotificationListener!!)
+    }
+
+    private fun stopAdminNotificationListener() {
+        adminNotificationListener?.let {
+            refBBDD.child("tienda").child("reservas").removeEventListener(it)
+            adminNotificationListener = null
         }
     }
 }

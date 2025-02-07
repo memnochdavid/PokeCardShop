@@ -17,6 +17,14 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.PokeCardShop"
         tools:targetApi="31">
+        <service
+            android:name=".dataclass.MyFirebaseMessagingService"
+            android:exported="false"
+            android:directBootAware="true">
+            <intent-filter>
+                <action android:name="com.google.firebase.MESSAGING_EVENT" />
+            </intent-filter>
+        </service>
         <activity
             android:name=".MainActivity"
             android:exported="false"
@@ -41,5 +49,4 @@
 
         </activity>
     </application>
-
 </manifest>

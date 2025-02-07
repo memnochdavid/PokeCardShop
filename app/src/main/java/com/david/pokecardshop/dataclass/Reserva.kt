@@ -19,12 +19,10 @@ import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
-import androidx.compose.runtime.snapshots.SnapshotStateList
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
@@ -38,16 +36,13 @@ import com.david.pokecardshop.cargaCartasCreadas
 import com.david.pokecardshop.cartasCreadas
 import com.david.pokecardshop.misCartas
 import com.david.pokecardshop.refBBDD
+import com.david.pokecardshop.reservaNueva
 import com.david.pokecardshop.reservasCreadas
 import com.david.pokecardshop.ui.theme.color_fuego_dark
 import com.david.pokecardshop.usuario_key
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.tasks.await
-import kotlin.collections.addAll
-import kotlin.collections.getValue
-import kotlin.io.path.exists
-import kotlin.text.clear
 
 data class Reserva(
     var reserva_id: String="",
@@ -165,6 +160,11 @@ fun guardaReservaFB(
         }
         finally {
             Toast.makeText(context, "Reserva con ID ${reserva.reserva_id} guardada con éxito", Toast.LENGTH_SHORT).show()
+            val nombre_carta = cartasCreadas.find { it.carta_id == reserva.carta_id }?.nombre
+            reservaNueva = Notificacion(
+                titulo = "Carta reservada",
+                texto = "Has reservado la carta de ${nombre_carta}!"
+            )
         }
     }
 }
