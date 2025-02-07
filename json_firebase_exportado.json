@@ -1,0 +1,258 @@
+{
+  "tienda": {
+    "cartas": {
+      "-OIR_mUpTWPfjaANOpgt": {
+        "carta_id": "-OIR_mUpTWPfjaANOpgt",
+        "descripcion": "Duerme en una dorsal marina. Si bate sus alas, puede\ncausar tormentas de 40 días.",
+        "fondo_carta": 2130968597,
+        "fondo_foto": 2130968590,
+        "habilidad_poke": [
+          "Presión",
+          "Hace que los PP del rival se\nacaben antes."
+        ],
+        "imagen": "https://cloud.appwrite.io/v1/storage/buckets/677bc72c000eb680c80b/files/lugia/view?project=6738854a0011e2bc643f&mode=admin",
+        "imagenAPI": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/249.png",
+        "nombre": "Lugia",
+        "number": "249",
+        "precio": 21.34,
+        "tipo": "psychic"
+      },
+      "-OIR_sCxzdCp0fs0VBEf": {
+        "carta_id": "-OIR_sCxzdCp0fs0VBEf",
+        "descripcion": "Levanta su cola para vigilar los alrededores. A veces,\npuede ser alcanzado por un rayo en esa pose.",
+        "fondo_carta": 2130968585,
+        "fondo_foto": 2130968590,
+        "habilidad_poke": [
+          "Elec. Estática",
+          "Puede paralizar al mínimo\ncontacto."
+        ],
+        "imagen": "https://cloud.appwrite.io/v1/storage/buckets/677bc72c000eb680c80b/files/pikachu/view?project=6738854a0011e2bc643f&mode=admin",
+        "imagenAPI": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/25.png",
+        "nombre": "Pikachu",
+        "number": "25",
+        "precio": 73.83,
+        "tipo": "electric"
+      },
+      "-OIUV8tGovjV3A9tm0eR": {
+        "carta_id": "-OIUV8tGovjV3A9tm0eR",
+        "descripcion": "Se alimenta de tierra. Después de comer una gran\nmontaña, se duerme y empieza a crecer.",
+        "fondo_carta": 2130968598,
+        "fondo_foto": 2130968590,
+        "habilidad_poke": [
+          "Velo Arena",
+          "Aumenta la Evasión en las\ntormentas de arena."
+        ],
+        "imagen": "https://cloud.appwrite.io/v1/storage/buckets/677bc72c000eb680c80b/files/larvitar/view?project=6738854a0011e2bc643f&mode=admin",
+        "imagenAPI": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/246.png",
+        "nombre": "Larvitar",
+        "number": "246",
+        "precio": 30.59000015258789,
+        "tipo": "rock"
+      },
+      "-OIWKDDvddbjkt9PHEZc": {
+        "carta_id": "-OIWKDDvddbjkt9PHEZc",
+        "descripcion": "Varios científicos lo consideran el antecesor de los\nPokémon porque usa todo tipo de movimientos.",
+        "fondo_carta": 2130968597,
+        "fondo_foto": 2130968590,
+        "habilidad_poke": [
+          "Sincronía",
+          "Contagia envenenamiento,\nparálisis o quemaduras."
+        ],
+        "imagen": "https://cloud.appwrite.io/v1/storage/buckets/677bc72c000eb680c80b/files/mew/view?project=6738854a0011e2bc643f&mode=admin",
+        "imagenAPI": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/151.png",
+        "nombre": "Mew",
+        "number": "151",
+        "precio": 19,
+        "tipo": "psychic"
+      },
+      "-OIWKHjwSObU9QlmwLWA": {
+        "carta_id": "-OIWKHjwSObU9QlmwLWA",
+        "descripcion": "De naturaleza descuidada y libre, no le importa\ndañarse cuando baja rodando montañas.",
+        "fondo_carta": 2130968598,
+        "fondo_foto": 2130968590,
+        "habilidad_poke": [
+          "Robustez",
+          "Evita que el rival pueda debilitarle\nde un solo golpe."
+        ],
+        "imagen": "https://cloud.appwrite.io/v1/storage/buckets/677bc72c000eb680c80b/files/graveler/view?project=6738854a0011e2bc643f&mode=admin",
+        "imagenAPI": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/75.png",
+        "nombre": "Graveler",
+        "number": "75",
+        "precio": 18,
+        "tipo": "rock"
+      },
+      "-OIWKTVBIeMPtLkC4itV": {
+        "carta_id": "-OIWKTVBIeMPtLkC4itV",
+        "descripcion": "Con sus brazos duros como el acero puede partir\nrocas gigantescas en mil pedazos de un solo golpe.",
+        "fondo_carta": 2130968601,
+        "fondo_foto": 2130968590,
+        "habilidad_poke": [
+          "Humedad",
+          "Evita que un Pokémon pueda\nautodestruirse."
+        ],
+        "imagen": "https://cloud.appwrite.io/v1/storage/buckets/677bc72c000eb680c80b/files/swampert/view?project=6738854a0011e2bc643f&mode=admin",
+        "imagenAPI": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/260.png",
+        "nombre": "Swampert",
+        "number": "260",
+        "precio": 24,
+        "tipo": "water"
+      },
+      "-OIWK_UCTk32VNNzNCzx": {
+        "carta_id": "-OIWK_UCTk32VNNzNCzx",
+        "descripcion": "Sus tres cabezas piensan de forma independiente.\nSin embargo, son amigas y no suelen discutir nunca.",
+        "fondo_carta": 2130968592,
+        "fondo_foto": 2130968590,
+        "habilidad_poke": [
+          "Clorofila",
+          "Sube la Velocidad cuando hay\nsol."
+        ],
+        "imagen": "https://cloud.appwrite.io/v1/storage/buckets/677bc72c000eb680c80b/files/exeggutor/view?project=6738854a0011e2bc643f&mode=admin",
+        "imagenAPI": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/103.png",
+        "nombre": "Exeggutor",
+        "number": "103",
+        "precio": 30,
+        "tipo": "grass"
+      },
+      "-OIWLPctrhF3bnbofKbB": {
+        "carta_id": "-OIWLPctrhF3bnbofKbB",
+        "descripcion": "Cuando tienes la sensación de que te están\nobservando, seguro que es porque Haunter está\ncerca.",
+        "fondo_carta": 2130968591,
+        "fondo_foto": 2130968590,
+        "habilidad_poke": [
+          "Levitación",
+          "Proporciona inmunidad frente a\nlos ataques de tipo Tierra."
+        ],
+        "imagen": "https://cloud.appwrite.io/v1/storage/buckets/677bc72c000eb680c80b/files/gengar/view?project=6738854a0011e2bc643f&mode=admin",
+        "imagenAPI": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/93.png",
+        "nombre": "Gengar",
+        "number": "93",
+        "precio": 25,
+        "tipo": "ghost"
+      },
+      "-OIWLU716aTtBoDf9fll": {
+        "carta_id": "-OIWLU716aTtBoDf9fll",
+        "descripcion": "Puede volar al agitar sus grandes hojas. Reparte entre\nlos niños la codiciada fruta dulce que crece de su\ncuello.",
+        "fondo_carta": 2130968592,
+        "fondo_foto": 2130968590,
+        "habilidad_poke": [
+          "Clorofila",
+          "Sube la Velocidad cuando hay\nsol."
+        ],
+        "imagen": "https://cloud.appwrite.io/v1/storage/buckets/677bc72c000eb680c80b/files/tropius/view?project=6738854a0011e2bc643f&mode=admin",
+        "imagenAPI": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/357.png",
+        "nombre": "Tropius",
+        "number": "357",
+        "precio": 13,
+        "tipo": "grass"
+      },
+      "-OIWLwMJaD5NfIO_JQDN": {
+        "carta_id": "-OIWLwMJaD5NfIO_JQDN",
+        "descripcion": "Lleva puesto el cráneo de su madre. Cuando se siente\nsolo se pone a gritar muy fuerte.",
+        "fondo_carta": 2130968593,
+        "fondo_foto": 2130968590,
+        "habilidad_poke": [
+          "Armadura Batalla",
+          "Bloquea golpes críticos."
+        ],
+        "imagen": "https://cloud.appwrite.io/v1/storage/buckets/677bc72c000eb680c80b/files/cubone/view?project=6738854a0011e2bc643f&mode=admin",
+        "imagenAPI": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/104.png",
+        "nombre": "Cubone",
+        "number": "104",
+        "precio": 15,
+        "tipo": "ground"
+      },
+      "-OIWM-PJYBrgyx_ZfXoP": {
+        "carta_id": "-OIWM-PJYBrgyx_ZfXoP",
+        "descripcion": "Adora el néctar de las flores. Puede localizar hasta las\nmás pequeñas cantidades de polen.",
+        "fondo_carta": 2130968582,
+        "fondo_foto": 2130968590,
+        "habilidad_poke": [
+          "Ojo Compuesto",
+          "Aumenta la Precisión del\nPokémon."
+        ],
+        "imagen": "https://cloud.appwrite.io/v1/storage/buckets/677bc72c000eb680c80b/files/butterfree/view?project=6738854a0011e2bc643f&mode=admin",
+        "imagenAPI": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/12.png",
+        "nombre": "Butterfree",
+        "number": "12",
+        "precio": 15,
+        "tipo": "bug"
+      },
+      "-OIWMGRyw0aokuLc59Ud": {
+        "carta_id": "-OIWMGRyw0aokuLc59Ud",
+        "descripcion": "Lleva un martillo gigante y lo usa para aplastar a sus enemigos.",
+        "fondo_carta": 2130968586,
+        "fondo_foto": 2130968590,
+        "habilidad_poke": [
+          "Ritmo Propio",
+          "Evita ser confundido."
+        ],
+        "imagen": "https://cloud.appwrite.io/v1/storage/buckets/677bc72c000eb680c80b/files/tinkaton/view?project=6738854a0011e2bc643f&mode=admin",
+        "imagenAPI": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/959.png",
+        "nombre": "Tinkaton",
+        "number": "959",
+        "precio": 25,
+        "tipo": "fairy"
+      }
+    },
+    "eventos": {
+      "-OIRaZN-jTKx8db0Gg6G": {
+        "actividades": [
+          "Lectura de manga",
+          "Combates GameBoy"
+        ],
+        "descripcion": "Jueves 21 - 17:00",
+        "evento_id": "-OIRaZN-jTKx8db0Gg6G",
+        "precio": 72.89,
+        "titulo": "Partida de cartas"
+      }
+    },
+    "inscripciones": {
+      "-OIRab9zSCj8kQkJ_2do": {
+        "evento_id": "-OIRaZN-jTKx8db0Gg6G",
+        "inscripcion_id": "-OIRab9zSCj8kQkJ_2do",
+        "inscritos": [
+          "-OIKZSwuB3VMCuD6Zb_L"
+        ]
+      }
+    },
+    "reservas": {
+      "-OIWMSoLXVD61XDbTp4v": {
+        "carta_id": "-OIWLPctrhF3bnbofKbB",
+        "reserva_id": "-OIWMSoLXVD61XDbTp4v",
+        "usuario_id": "-OIKZSwuB3VMCuD6Zb_L"
+      },
+      "-OIWMUatAwjObhFBmBVn": {
+        "carta_id": "-OIWKDDvddbjkt9PHEZc",
+        "reserva_id": "-OIWMUatAwjObhFBmBVn",
+        "usuario_id": "-OIKZSwuB3VMCuD6Zb_L"
+      }
+    },
+    "usuarios": {
+      "-OIKZSwuB3VMCuD6Zb_L": {
+        "admin": false,
+        "email": "a",
+        "key": "-OIKZSwuB3VMCuD6Zb_L",
+        "nick": "a",
+        "pass": "a",
+        "propiedad": [
+          "-OIR_sCxzdCp0fs0VBEf",
+          "-OIWMGRyw0aokuLc59Ud"
+        ]
+      },
+      "-OIKZUzDWafDrDruhFnm": {
+        "admin": true,
+        "email": "admin",
+        "key": "-OIKZUzDWafDrDruhFnm",
+        "nick": "admin",
+        "pass": "admin"
+      },
+      "-OIR-Ej_3A4LVFfLS46z": {
+        "admin": false,
+        "email": "b",
+        "key": "-OIR-Ej_3A4LVFfLS46z",
+        "nick": "b",
+        "pass": "b"
+      }
+    }
+  }
+}
